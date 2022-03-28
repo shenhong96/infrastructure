@@ -1,0 +1,18 @@
+---
+- hosts: Media-Server
+  become: true
+  tasks:
+    - name: Make sure jellyfin is started and enabled.
+      service: 
+        name: jellyfin
+        state: started
+        enabled: true
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Make sure sshd is started and enabled.
+      service: 
+        name: ssh
+        state: started
+        enabled: true

@@ -1,0 +1,38 @@
+---
+# tasks file for flask_web
+    - name: Uninstall existing any docker packages
+      apt:
+        name:
+          - docker
+          - docker-engine
+          - docker.io
+          - containerd
+          - runc
+        state: absent
+        purge: true
+        autoclean: true
+        autoremove: true
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+    - name: Add Docker Officlal Key
+      ansible.builtin.apt_key:
+        url: "{{ docker_gpg_url }}"
+        state: present
+
+    - name: Add Docker Official Repo
+      ansible.builtin.apt_repository: 
+        repo: "{{ docker_apt_repo }}"
+        state: present 
+
+    - name: Update apt and install docker-ce
+      apt:
+        update_cache: true
+        state: present
+        name: 
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose

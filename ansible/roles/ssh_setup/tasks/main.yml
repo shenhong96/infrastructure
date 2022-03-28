@@ -1,0 +1,30 @@
+---
+# tasks file for flask_web
+    - name: Create ansible user
+      user:
+        name: "{{ username }}"
+        state: present
+        comment: An ansible user used by ansible LXC to manage this server
+        password: "{{ ansible_user_password }}"
+        shell: /bin/bash
+
+    - name: Setup alternate SSH port on sshd_config
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "^Port"
+        line: "{{ ssh_port }}"
+
+    - name: Allow/Disallow Password Authentication
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin prohibit-password" 
+              #options: yes, no, prohibit-password
+      notify: "Restart sshd"
+
+    - name: Setup alternate SSH port on systemd config
+      lineinfile:
+        dest: "/etc/systemd/system/sockets.target.wants/ssh.socket"
+        regexp: "^ListenStream"
+        line: "{{ systemd_ssh_port }}" 
+      notify: "Restart sshd"   

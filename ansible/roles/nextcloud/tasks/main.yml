@@ -1,0 +1,73 @@
+---
+- hosts: Nextcloud
+  become: true
+  tasks:
+    - name: Get timestamp from the system
+      shell: "date +%Y-%m-%d@%H-%M-%S"
+      register: tstamp_ns
+
+    - name: Set variables
+      set_fact:
+       cur_time_ns: "{{ tstamp_ns.stdout }}"
+
+    - name: System timestamp - time, including the first 5 nanoseconds digits
+      debug:
+       msg:  "Current date: {{ cur_time_ns }}"
+
+    - name: Backup Nextcloud Folder
+      copy:
+        src: /var/www/nextcloud/
+        dest: /var/www/nextcloud-{{ tstamp_ns.stdout[10:]}}/
+        owner: www-data
+        directory_mode: yes
+        remote_src: yes
+
+    - name: Delete Ori Nextcloud Folder
+      file:
+        path: /var/www/nextcloud
+        state: absent
+    
+    - name: Stopping Nginx Web-Server
+      service:
+        name: nginx
+        state: stopped
+
+    - name: Download Nextcloud.
+      get_url:
+        url: "https://download.nextcloud.com/server/releases/{{ nextcloud_version }}" 
+        dest: "/var/www/nextcloud-{{ nextcloud_version }}"
+        checksum: "{{ nextcloud_checksum }}"
+
+    - name: Un-tar Nextcloud.
+      unarchive:
+        src: "/var/www/nextcloud-{{ nextcloud_version }}"
+        dest: "/var/www/"
+        remote_src: yes
+
+    - name: Copy Web-Server code.
+      copy:
+        src: "/var/www/nextcloud-{{ tstamp_ns.stdout[10:]}}/config/config.php"
+        dest: "/var/www/nextcloud/config/config.php"
+        remote_src: yes
+
+    - name: Change file ownership
+      file:
+        path: /var/www/nextcloud
+        owner: www-data
+        group: www-data
+        state: directory
+        recurse: yes
+
+    - name: Ensure directories perm are 750
+      shell: find /var/www/nextcloud/ -type d -exec chmod 750 {} \;
+
+    - name: Ensure files perm are 640
+      shell: find /var/www/nextcloud/ -type f -exec chmod 640 {} \;
+
+    - name: Stopping Nginx Web-Server
+      service:
+        name: nginx
+        state: started
+
+    - name: Upgrade Nextcloud through occ command
+      shell: cd /var/www/nextcloud && sudo -u www-data php occ upgrade

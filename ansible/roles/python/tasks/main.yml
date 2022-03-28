@@ -1,0 +1,14 @@
+---
+    - name: Install dependencies
+      dnf: 
+        name:
+          - epel-release
+          - python3
+          - platform-python-setuptools
+          - platform-python-devel
+          - gcc
+          - gcc-c++
+          - make
+          - platform-python-pip
+        state: present
+        update_cache: yes

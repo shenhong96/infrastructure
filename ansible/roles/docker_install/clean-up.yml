@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Uninstall existing any docker packages
+      apt:
+        name:
+          - docker
+          - docker-engine
+          - docker.io
+          - containerd
+          - runc
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose
+          - containerd.io
+        state: absent
+        purge: true
+        autoclean: true
+        autoremove: true
+
+    - name: Add Docker Officlal Key
+      ansible.builtin.apt_key:
+        url: "{{ docker_gpg_url }}"
+        state: absent
+
+    - name: Add Docker Official Repo
+      ansible.builtin.apt_repository: 
+        repo: "{{ docker_apt_repo }}"
+        state: absent 
