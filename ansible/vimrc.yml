@@ -1,0 +1,6 @@
+---
+- name: Setup vimrc
+  hosts: all
+  become: yes
+  roles:
+    - vim

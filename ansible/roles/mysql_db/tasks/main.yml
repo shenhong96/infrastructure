@@ -1,0 +1,29 @@
+---
+# tasks file for mysql_db
+    - name: Install MySQL database
+      dnf:
+        name:
+          - mysql-server
+          - mysql
+          - python3-PyMySQL
+        state: present
+
+    - name: Start MySQL Service
+      service:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    - name: Create Application Database
+      mysql_db:
+        name:
+          - "{{db_name}}"
+        state: present
+
+    - name: Create Application DB User
+      mysql_user:
+        name: "{{db_user}}"
+        password: "{{db_user_password}}"
+        priv: '*.*:ALL'          
+        state: present
+        host: '%'

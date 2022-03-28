@@ -1,0 +1,12 @@
+---
+# tasks file for flask_web
+    - name: Install vim
+      apt:
+        name: 
+          - vim
+        state: present
+
+    - name: Copy vimrc files
+      copy:
+        src: files/vimrc
+        dest: /root/.vimrc

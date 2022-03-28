@@ -1,0 +1,6 @@
+---
+- name: SSH Setup and Security Tightening
+  hosts: all
+  become: yes
+  roles:
+    - ssh_setup

@@ -1,0 +1,55 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Classify hosts depending on their OS distribution
+      group_by:
+        key: os_{{ ansible_facts['distribution'] }}
+
+#now just on the Ubuntu hosts..
+- hosts: os_Ubuntu
+  gather_facts: False
+  become: true
+  tasks:
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+- hosts: os_Pop!_OS
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+- hosts: os_Debian
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+
+- hosts: os_Archlinux
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Apply cache update and system upgrade.
+      pacman:
+        update_cache: true
+        upgrade: yes
+
+- hosts: os_Fedora
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Apply cache update and system upgrade.
+      dnf:
+        name: "*"
+        update_cache: true
+        state: latest

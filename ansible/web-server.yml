@@ -1,0 +1,8 @@
+---
+- name: Deploy a web application.
+  hosts: rhel_webservers
+  become: yes
+  roles:
+    - python
+    - mysql_db
+    - flask_web
