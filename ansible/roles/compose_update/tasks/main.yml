@@ -1,0 +1,10 @@
+---
+   - name: Upgrade Portainer Main Stack
+     ansible.builtin.shell:
+       cmd: docker-compose pull
+       chdir: /root
+     notify: "Restart docker"
+#     register: results
+
+#   - debug:
+#       var: results.stdout

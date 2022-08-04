@@ -1,23 +1,21 @@
 ---
-- hosts: Nextcloud
-  become: true
-  tasks:
+
     - name: Get timestamp from the system
-      shell: "date +%Y-%m-%d@%H-%M-%S"
+      shell: "date +%d-%m-%Y"
       register: tstamp_ns
 
     - name: Set variables
       set_fact:
-       cur_time_ns: "{{ tstamp_ns.stdout }}"
+        cur_time_ns: "{{ tstamp_ns.stdout }}"
 
     - name: System timestamp - time, including the first 5 nanoseconds digits
       debug:
-       msg:  "Current date: {{ cur_time_ns }}"
+        msg:  "Current date: {{ cur_time_ns }}"
 
     - name: Backup Nextcloud Folder
       copy:
         src: /var/www/nextcloud/
-        dest: /var/www/nextcloud-{{ tstamp_ns.stdout[10:]}}/
+        dest: /var/www/nextcloud-{{ tstamp_ns.stdout}}/
         owner: www-data
         directory_mode: yes
         remote_src: yes

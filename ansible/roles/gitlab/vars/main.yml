@@ -1,0 +1,5 @@
+---
+gitlab_gpg_url: "https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey"
+gitlab_src_repo: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu/ focal main"
+gitlab_src2_repo: "deb-src https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu/ focal main"
+gitlab_url: "external_url 'https://gitlab.ahlooii.com'"

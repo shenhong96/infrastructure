@@ -14,6 +14,9 @@
         regexp: "^Port"
         line: "{{ ssh_port }}"
 
+    - name: Setup Locale
+      shell: "export LC_ALL=en_US.UTF-8"
+
     - name: Allow/Disallow Password Authentication
       lineinfile:
         dest: "/etc/ssh/sshd_config"
@@ -28,3 +31,17 @@
         regexp: "^ListenStream"
         line: "{{ systemd_ssh_port }}" 
       notify: "Restart sshd"   
+
+    - name: Transfer Pub Key
+      ansible.posix.authorized_key:
+        user: "{{ username }}"
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/id_ed25519.pub') }}"
+        
+    - name: Sudoer amendments
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        insertafter: '^%sudo'
+        line: '{{ username }} ALL=(ALL:ALL) NOPASSWD:ALL'
+        validate: '/usr/sbin/visudo -cf %s'

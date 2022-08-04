@@ -1,0 +1,6 @@
+---
+- name: Setup Gitlab 
+  hosts: Gitlab
+  become: true
+  roles:
+    - gitlab

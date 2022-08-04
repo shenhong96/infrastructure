@@ -1,0 +1,6 @@
+---
+- name: upgrade docker container
+  hosts: Portainer
+  become: yes
+  roles:
+    - compose_update
