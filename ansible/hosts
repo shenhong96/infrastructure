@@ -1,4 +1,5 @@
 [proxmox]
+ProxmoxMaster ansible_host="{{ proxmox_host_ip }}"
 Adguard ansible_host="{{ adguard_host_ip }}"
 File-Server ansible_host="{{ filesvr_host_ip }}"
 Media-Server ansible_host="{{ mediasvr_host_ip }}"
@@ -8,6 +9,7 @@ Portainer ansible_host="{{ portainer_host_ip }}"
 Nextcloud ansible_host="{{ nextcloud_host_ip }}"
 Logs ansible_host="{{ logs_host_ip }}"
 Ansible ansible_host="{{ ansible_host_ip }}"
+Gitlab ansible_host="{{ gitlab_host_ip }}"
 Tailscale ansible_host="{{ tailscale_host_ip }}"
 Nebula ansible_host="{{ nebula_host_ip }}"
 Kub01 ansible_host="{{ kub01_host_ip }}"
@@ -16,6 +18,5 @@ Kub01 ansible_host="{{ kub01_host_ip }}"
 Gaming ansible_host="{{ gamingvm_host_ip }}"
 Lenovo-Latop ansible_host="{{ lenovolatop_host_ip }}"
 
-
-
-
+[cloud]
+Oracle-Arm ansible_host=10.0.96.200

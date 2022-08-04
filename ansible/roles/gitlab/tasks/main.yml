@@ -1,0 +1,58 @@
+---
+# tasks file for gitlab, refers to https://linuxhint.com/install-gitlab-ubuntu-22-04/
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+    - name: Install dependencies 
+      apt:
+        name:
+          - curl
+          - openssh-server
+          - ca-certificates
+          - tzdata
+          - perl
+          - debian-archive-keyring
+          - lsb-release
+          - apt-transport-https
+          - software-properties-common
+        state: present
+        update_cache: true
+        purge: true
+        autoclean: true
+
+    - name: Add Gitlab Officlal Key
+      ansible.builtin.apt_key:
+        url: "{{ gitlab_gpg_url }}"
+        state: present
+ 
+    - name: Add Gitlab Official Repo
+      ansible.builtin.apt_repository: 
+        repo: "{{ gitlab_src_repo }}"
+        state: present 
+ 
+    - name: Add Gitlab Official Repo
+      ansible.builtin.apt_repository: 
+        repo: "{{ gitlab_src2_repo }}"
+        state: present
+
+    - name: Install Gitlab CE
+      apt:
+        state: present
+        name: 
+          - gitlab-ce
+
+    - name: Start Gitlab for first time.
+      command: gitlab-ctl reconfigure
+      become: true
+      become_user: root
+#      failed_when: false
+
+    - name: Setup URL Domain for Gitlab
+      lineinfile:
+        dest: "/etc/gitlab/gitlab.rb"
+        regexp: "^external_url"
+        line: "{{ gitlab_url }}"
+      notify: 
+        - "Reconfigure gitlab-ce"

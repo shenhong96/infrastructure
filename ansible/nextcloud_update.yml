@@ -1,0 +1,6 @@
+---
+- name: update nextcloud
+  hosts: Nextcloud
+  become: yes
+  roles:
+    - nextcloud

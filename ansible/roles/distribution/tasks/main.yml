@@ -1,0 +1,33 @@
+---
+# tasks file for distribution scripting to VM
+    - name: Script Distribution for Proxmox
+      when: inventory_hostname == 'ProxmoxMaster'
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/root/scripts"
+        owner: "root"
+        mode: 0600
+      with_fileglob:
+        - "/root/the-homelab/scripts/proxmox/*"
+
+    - name: Script Distribution for PrivateVPN
+      when: inventory_hostname == 'PrivateVPN'
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/root/scripts"
+        owner: "root"
+        mode: 0600
+      with_fileglob:
+        - "/root/the-homelab/scripts/privatevpn/*"
+
+    - name: Script Distribution for Oracle Arm Instance
+      when: inventory_hostname == 'Oracle-Arm'
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/home/ubuntu/scripts"
+        owner: "root"
+        mode: 0600
+      with_fileglob:
+        - "/root/the-homelab/scripts/oracle-arm/*"

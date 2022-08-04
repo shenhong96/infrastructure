@@ -1,0 +1,15 @@
+---
+# handlers file for flask_web
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted
+    
+    - name: Reconfigure gitlab-ce
+      command: gitlab-ctl reconfigure
+      become: true
+      become_user: root
+      
+      
+
+      

@@ -1,0 +1,5 @@
+---
+- name: Script distribution
+  hosts: all
+  roles:
+    - distribution
