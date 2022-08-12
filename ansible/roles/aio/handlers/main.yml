@@ -1,0 +1,4 @@
+- name: restart aio
+  shell:
+    chdir: /opt/aio
+    cmd: "{{ docker_update_command }}"

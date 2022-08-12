@@ -1,0 +1,150 @@
+---
+version: "2.1"
+
+x-lsio: &lsio
+  environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Asia/Kuala_Lumpur
+
+services:
+  homer:
+    container_name: homer
+    image: b4bz/homer:latest
+    environment:
+      - INIT_ASSETS=0
+    ports:
+      - 7777:8080
+    volumes:
+      - ./homer/config:/www/assets
+    restart: always
+
+  homarr:
+    container_name: homarr
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    volumes:
+      - ./homarr/configs:/app/data/configs
+      - ./homarr/icons:/app/public/icons
+    ports:
+      - '7575:7575'
+
+  librespeed:
+    image: ghcr.io/linuxserver/librespeed
+    container_name: librespeed
+    networks:
+      - traefik
+    <<: *lsio
+    volumes:
+      - ./librespeed/config:/config
+    ports:
+      - 82:80
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.librespeed.entrypoints=web"
+      - "traefik.http.routers.librespeed.rule=Host(`librespeed.{{ domain_name }}`)"
+      - "traefik.http.services.librespeed.loadbalancer.server.port=82"
+      - "traefik.docker.network=traefik"
+
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguard-home2
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 784:784/udp
+      - 853:853/tcp
+      - 3000:3000/tcp
+      - 180:80/tcp
+      - 1443:443/tcp
+    volumes:
+      - ./adguard/workdir:/opt/adguardhome/work
+      - ./adguard/confdir:/opt/adguardhome/conf
+    restart: always
+
+  uptime-kuma:
+    container_name: uptime-kuma
+    image: 'louislam/uptime-kuma:1'
+    ports:
+      - '3001:3001'
+    volumes:
+      - './uptime-kuma:/app/data'
+    restart: always
+
+  smokeping:
+    image: lscr.io/linuxserver/smokeping
+    container_name: smokeping
+    <<: *lsio
+    volumes:
+      - ./smokeping/config:/config
+      - ./smokeping/data:/data
+    ports:
+      - 81:80
+    restart: unless-stopped
+
+  firefox:
+    image: lscr.io/linuxserver/firefox
+    container_name: firefox
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kuala_Lumpur
+      - FILE__PASSWORD=/run/secret/password
+    volumes:
+      - ./firefox:/config
+    ports:
+      - 3309:3000
+    shm_size: "2gb"
+    restart: unless-stopped
+
+  webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-mate
+    container_name: webtop
+    security_opt:
+      - seccomp:unconfined #optional
+    <<: *lsio
+    volumes:
+      - ./webtop:/config
+      - /var/run/docker.sock:/var/run/docker.sock #optional
+    ports:
+      - 1596:3000
+    shm_size: "4gb" #optional
+    restart: unless-stopped
+
+
+
+
+########### SYNCTHING #############
+  syncthing:
+    image: ghcr.io/linuxserver/syncthing
+    container_name: syncthing
+    hostname: syncthing #optional
+    networks:
+      - traefik
+    <<: *lsio
+    volumes:
+      - ./syncthing/config:/config
+      - /mnt/syncthing/Mate-20:/mnt/mate20
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.syncthing.entrypoints=https"
+      - "traefik.http.routers.syncthing.rule=Host(`syncthing.{{ domain_name }}`)"
+      - "traefik.http.middlewares.syncthing-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.syncthing.middlewares=syncthing-https-redirect"
+      - "traefik.http.routers.syncthing-secure.entrypoints=https"
+      - "traefik.http.routers.syncthing-secure.rule=Host(`syncthing.{{ domain_name }}`)"
+      - "traefik.http.routers.syncthing-secure.tls=true"
+      - "traefik.http.routers.syncthing-secure.service=syncthing"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+      - "traefik.docker.network=traefik"
+
+networks:
+  traefik:
+    external: true

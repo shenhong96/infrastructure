@@ -8,7 +8,7 @@
         owner: "root"
         mode: 0600
       with_fileglob:
-        - "/root/the-homelab/scripts/proxmox/*"
+        - "../../../scripts/proxmox/*"
 
     - name: Script Distribution for PrivateVPN
       when: inventory_hostname == 'PrivateVPN'
@@ -19,7 +19,7 @@
         owner: "root"
         mode: 0600
       with_fileglob:
-        - "/root/the-homelab/scripts/privatevpn/*"
+        - "../../../scripts/privatevpn/*"
 
     - name: Script Distribution for Oracle Arm Instance
       when: inventory_hostname == 'Oracle-Arm'
@@ -30,4 +30,15 @@
         owner: "root"
         mode: 0600
       with_fileglob:
-        - "/root/the-homelab/scripts/oracle-arm/*"
+        - "../../../scripts/oracle-arm/*"
+
+    - name: Script Distribution for BabyThanos
+      when: inventory_hostname == 'Baby-Thanos'
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/home/hp-hp/scripts"
+        owner: "root"
+        mode: 0600
+      with_fileglob:
+        - "../../../scripts/oracle-arm/*"

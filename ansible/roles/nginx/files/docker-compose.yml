@@ -1,0 +1,51 @@
+version: '3'
+services:
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: "{{ db_user }}"
+      DB_MYSQL_PASSWORD: "{{ db_password }}"
+      DB_MYSQL_NAME: "{{ db_name }}"
+    volumes:
+      - ./nginx_proxy_manager/data:/data
+      - ./nginx_proxy_manager/letsencrypt:/etc/letsencrypt
+  db:
+    image: 'jc21/mariadb-aria:latest'
+    container_name: npm_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_DATABASE: "{{ db_name }}"
+      MYSQL_USER: "{{ db_user }}"
+      MYSQL_PASSWORD: "{{ db_password }}"
+    volumes:
+      - ./nginx_proxy_manager/data/mysql:/var/lib/mysql
+  
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+    volumes:
+      - ./Authelia:/config #change this to a shared folder on your system. DO NOT use a "volume"
+    ports:
+      - 9091:9091
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+
+  portainer:
+    image: 'cr.portainer.io/portainer/agent'
+    container_name: portainer_agent
+    ports:
+        - '9001:9001'
+    restart: always
+    volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/var/lib/docker/volumes:/var/lib/docker/volumes'
+    

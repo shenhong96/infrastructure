@@ -1,6 +1,19 @@
 ---
-- name: upgrade docker container
+- name: PrivateVPN Stack
+  hosts: PrivateVPN
+  become: yes
+  roles:
+    - privatevpn
+
+- name: Main Docker Stacks
   hosts: Portainer
   become: yes
   roles:
-    - compose_update
+    - traefik
+    - aio
+
+- name: Nginx and Authelia
+  hosts: Proxy
+  become: yes
+  roles:
+    - nginx

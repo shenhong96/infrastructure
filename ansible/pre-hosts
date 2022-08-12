@@ -1,5 +1,4 @@
 [proxmox]
-ProxmoxMaster ansible_host="{{ proxmox_host_ip }}"
 File-Server ansible_host="{{ filesvr_host_ip }}"
 Media-Server ansible_host="{{ mediasvr_host_ip }}"
 Proxy ansible_host="{{ proxy_host_ip }}"
@@ -8,7 +7,7 @@ Portainer ansible_host="{{ portainer_host_ip }}"
 Nextcloud ansible_host="{{ nextcloud_host_ip }}"
 Logs ansible_host="{{ logs_host_ip }}"
 Ansible ansible_host="{{ ansible_host_ip }}"
-Gitlab ansible_host="{{ gitlab_host_ip }}"
+Gitlab ansible_host="{{ gitlab_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 Tailscale ansible_host="{{ tailscale_host_ip }}"
 Nebula ansible_host="{{ nebula_host_ip }}"
 Kub01 ansible_host="{{ kub01_host_ip }}"
@@ -18,7 +17,7 @@ Gaming ansible_host="{{ gamingvm_host_ip }}"
 Lenovo-Latop ansible_host="{{ lenovolatop_host_ip }}"
 
 [cloud]
-Oracle-Arm ansible_host="{{ oracle_host_ip }}"
+Oracle-Arm ansible_host=10.0.96.200
 
 [thanos]
-Baby-Thanos ansible_host="{{ babythanos_host_ip }}"
+Baby-Thanos ansible_host="{{ babythanos_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'

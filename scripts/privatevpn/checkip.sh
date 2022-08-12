@@ -3,7 +3,7 @@
 CONTAINER=(vpn qbittorrent radarr prowlarr sonarr lidarr bazarr readarr)
 
 echo -e " \n" >> ./.ip.txt
-echo -e "###### *arr SERVICE VPN IP CHECKING REPORT ###### \n" >> ./.ip.txt
+echo -e "###### *arr SERVICE, VPN IP Checking In Progress..... ###### \n" >> ./.ip.txt
 
 for c in ${CONTAINER[@]}
 do

@@ -4,3 +4,9 @@
   become: true
   roles:
     - gitlab
+
+- name: Setup Jenkins 
+  hosts: Ansible
+  become: true
+  roles:
+    - jenkins

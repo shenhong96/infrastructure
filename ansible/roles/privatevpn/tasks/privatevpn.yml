@@ -1,0 +1,26 @@
+- name: Include PrivateVPN variables
+  include_vars: privatevpn.yml
+
+- name: Create PrivateVPN directory
+  file:
+    path: /{{ docker_user.name }}
+    state: directory
+    owner: "{{ docker_user.name }}"
+    mode: "{{ docker_compose_directory_mask }}"
+  become: true
+
+- name: Install PrivateVPN compose file
+  template:
+    src: files/PrivateVPN/docker-compose.yml
+    dest: /{{ docker_user.name }}/docker-compose.yml
+    mode: "{{ docker_compose_file_mask }}"
+    owner: "{{ docker_user.name }}"
+    validate: docker-compose -f %s config
+  register: compose_file
+  become: true
+
+- name: restart PrivateVPN
+  shell:
+    chdir: /{{ docker_user.name }}
+    cmd: "{{ docker_update_command }}"
+  when: compose_file.changed
