@@ -1,0 +1,10 @@
+http:
+  routers:
+    router-jellyfin:
+      rule: Host(`jellyfin.{{ domain_name }}`)
+      service: service-jellyfin
+  services:
+    service-jellyfin:
+      loadBalancer:
+        servers:
+          - url: http://{{ mediasvr_host_ip }}:8096

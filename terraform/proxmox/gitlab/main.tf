@@ -19,6 +19,12 @@ resource "proxmox_lxc" "Gitlab" {
     size    = "20G"
   }
 
+#  mountpoint {
+#    slot    = 0
+#    storage = "/mnt/storage/appdata/gitlab"
+#    mp      = "/mnt/appdata"
+#    size    = "1G"
+#  }
   mountpoint {
     key     = "1"
     slot    = 1
@@ -30,6 +36,7 @@ resource "proxmox_lxc" "Gitlab" {
 
   features {
     nesting = true
+   #fuse = 
   }
 
   network {

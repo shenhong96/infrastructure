@@ -31,6 +31,7 @@
         regexp: "^ListenStream"
         line: "{{ systemd_ssh_port }}" 
       notify: "Restart sshd"   
+      ignore_errors: yes
 
     - name: Transfer Pub Key
       ansible.posix.authorized_key:

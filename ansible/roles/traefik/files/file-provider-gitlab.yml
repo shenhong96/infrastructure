@@ -1,0 +1,10 @@
+http:
+  routers:
+    router-gitlab:
+      rule: Host(`gitlab.{{ domain_name }}`)
+      service: service-gitlab
+  services:
+    service-gitlab:
+      loadBalancer:
+        servers:
+          - url: {{ gitlab_host_ip }}

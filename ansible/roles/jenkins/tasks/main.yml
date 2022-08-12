@@ -1,0 +1,26 @@
+---
+# tasks file for gitlab, refers to https://linuxhint.com/install-gitlab-ubuntu-22-04/
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+    - name: Add jenkins gpg key file 
+      shell: wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key |sudo gpg --dearmor -o /usr/share/keyrings/jenkins.gpg
+
+    - name: Add jenkins gpg key file 
+      shell: sudo sh -c 'echo deb [signed-by=/usr/share/keyrings/jenkins.gpg] http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+    - name: Install Jenkins
+      apt:
+        name:
+          - fontconfig
+          - openjdk-11-jre
+          - jenkins
+        state: present
+        update_cache: true
+        purge: true
+        autoclean: true
+      notify: 
+        - "Start Jenkins"
+  
