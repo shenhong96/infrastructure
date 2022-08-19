@@ -1,0 +1,104 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+#  variables:
+#    CI_DEBUG_TRACE: "true"
+
+.default_rules:
+  rules: 
+    if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+
+.get_ansible_vault:
+  before_script:
+    - chmod 400 $ANS_KEY
+    - export BW_SESSION=$(bw unlock --raw $BW_KEY)
+
+stages:          # List of stages for jobs, and their order of execution
+  - test
+  - deploy
+
+lint-test-job:   # This job also runs in the test stage.
+  stage: test    # It can run at the same time as unit-test-job (in parallel).
+  script:
+    - echo "Linting code... This will take about 2 seconds."
+    - sleep 2
+    - echo "No lint issues found."
+
+script-distribution:      
+  stage: deploy  
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+      - scripts/**/*
+      - ansible/roles/distribution/*        
+      - ansible/distribution.yml  
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - echo "Distributing scripts...."
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY distribution.yml
+
+docker-compose-mastery:      # This job runs in the deploy stage.
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+      - ansible/roles/traefik/**/*
+      - ansible/roles/aio/**/*  
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - echo "Deploying portainer aio stack...."
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY compose_update.yml  --limit Portainer
+
+docker-compose-proxy:      # This job runs in the deploy stage.
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+        - ansible/roles/nginx/**/*
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - echo "Deploying reverse-proxy stack application..."
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY compose_update.yml --limit Proxy
+
+docker-compose-privatevpn:      # This job runs in the deploy stage.
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+        - ansible/roles/privatevpn/**/*
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - echo "Deploying privatevpn stack application..."
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY compose_update.yml --limit PrivateVPN
+
+bootstrap-job:
+  stage: deploy
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+        - ansible/roles/vim/**/*
+        - ansible/roles/ssh_setup/**/*
+        - ansible/hosts
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY ssh-setup.yml
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook --private-key $ANS_KEY vimrc.yml
