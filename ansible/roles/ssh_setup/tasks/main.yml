@@ -1,5 +1,5 @@
 ---
-# tasks file for flask_web
+# tasks file to bootstrap my servers
     - name: Create ansible user
       user:
         name: "{{ username }}"
@@ -30,8 +30,8 @@
         dest: "/etc/systemd/system/sockets.target.wants/ssh.socket"
         regexp: "^ListenStream"
         line: "{{ systemd_ssh_port }}" 
-      notify: "Restart sshd"   
       ignore_errors: yes
+      notify: "Restart sshd"   
 
     - name: Transfer Pub Key
       ansible.posix.authorized_key:

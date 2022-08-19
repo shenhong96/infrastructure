@@ -1,7 +1,8 @@
 - name: Include variables
-  include_vars: aio.yml
+  include_vars:
+    dir: vars
 
-- name: Create directory
+- name: Create AIO directory
   file:
     path: /opt/aio
     state: directory
@@ -9,7 +10,15 @@
     mode: "{{ docker_compose_directory_mask }}"
   become: true
 
-- name: Install compose file
+- name: Create photoprism directory
+  file:
+    path: /opt/photoprism
+    state: directory
+    owner: "{{ docker_user.name }}"
+    mode: "{{ docker_compose_directory_mask }}"
+  become: true
+
+- name: Install AIO compose file
   template:
     src: files/docker-compose.yml
     dest: /opt/aio/docker-compose.yml
@@ -17,4 +26,14 @@
     owner: "{{ docker_user.name }}"
     validate: docker-compose -f %s config
   notify: restart aio
+  become: true
+
+- name: Install Photoprism compose file
+  template:
+    src: files/photoprism.yml
+    dest: /opt/photoprism/docker-compose.yml
+    mode: "{{ docker_compose_file_mask }}"
+    owner: "{{ docker_user.name }}"
+    validate: docker-compose -f %s config
+  notify: restart photoprism
   become: true

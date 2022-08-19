@@ -2,3 +2,8 @@
   shell:
     chdir: /opt/aio
     cmd: "{{ docker_update_command }}"
+
+- name: restart photoprism
+  shell:
+    chdir: /opt/photoprism
+    cmd: "{{ docker_update_command }}"

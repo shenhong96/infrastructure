@@ -17,3 +17,9 @@
   become: yes
   roles:
     - nginx
+
+- name: Jellyfin
+  hosts: Media-Server
+  become: yes
+  roles:
+    - jellyfin

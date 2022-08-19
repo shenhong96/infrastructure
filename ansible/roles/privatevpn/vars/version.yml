@@ -1,0 +1,8 @@
+wireguard_ver: "1.0.20210914"
+qbittorrent_ver: "4.4.3"
+prowlarr_ver: "0.4.4-develop"
+radarr_ver: "4.1.0"
+sonarr_ver: "3.0.9"
+lidarr_ver: "1.0.2"
+bazarr_ver: "1.1.0"
+readarr_ver: "0.1.1-develop"

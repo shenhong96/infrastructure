@@ -1,6 +1,6 @@
 [proxmox]
 File-Server ansible_host="{{ filesvr_host_ip }}"
-Media-Server ansible_host="{{ mediasvr_host_ip }}"
+Media-Server ansible_host="{{ mediasvr_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 Proxy ansible_host="{{ proxy_host_ip }}"
 PrivateVPN ansible_host="{{ privatevpn_host_ip }}"
 Portainer ansible_host="{{ portainer_host_ip }}"
@@ -17,7 +17,7 @@ Gaming ansible_host="{{ gamingvm_host_ip }}"
 Lenovo-Latop ansible_host="{{ lenovolatop_host_ip }}"
 
 [cloud]
-Oracle-Arm ansible_host=10.0.96.200
+Oracle-Arm ansible_host="{{ oracle_host_ip }}"
 
 [thanos]
 Baby-Thanos ansible_host="{{ babythanos_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'

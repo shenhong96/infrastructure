@@ -2,5 +2,6 @@
 - name: Script distribution
   hosts: all
   ignore_unreachable: yes
+  become: true
   roles:
     - distribution
