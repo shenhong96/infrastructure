@@ -8,6 +8,29 @@ x-lsio: &lsio
     - TZ=Asia/Kuala_Lumpur
 
 services:
+
+
+
+
+
+
+
+  adguardhome:
+    image: adguard/adguardhome:{{ adguard_ver }}
+    container_name: adguard-home2
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 784:784/udp
+      - 853:853/tcp
+      - 3000:3000/tcp
+      - 180:80/tcp
+      - 1443:443/tcp
+    volumes:
+      - ./adguard/workdir:/opt/adguardhome/work
+      - ./adguard/confdir:/opt/adguardhome/conf
+    restart: always
+    
   homer:
     container_name: homer
     image: b4bz/homer:latest
@@ -27,7 +50,7 @@ services:
       - ./homarr/configs:/app/data/configs
       - ./homarr/icons:/app/public/icons
     ports:
-      - '7575:7575'
+      - '9999:7575'
 
   librespeed:
     image: ghcr.io/linuxserver/librespeed
@@ -46,22 +69,6 @@ services:
       - "traefik.http.routers.librespeed.rule=Host(`librespeed.{{ domain_name }}`)"
       - "traefik.http.services.librespeed.loadbalancer.server.port=82"
       - "traefik.docker.network=traefik"
-
-  adguardhome:
-    image: adguard/adguardhome
-    container_name: adguard-home2
-    ports:
-      - 53:53/tcp
-      - 53:53/udp
-      - 784:784/udp
-      - 853:853/tcp
-      - 3000:3000/tcp
-      - 180:80/tcp
-      - 1443:443/tcp
-    volumes:
-      - ./adguard/workdir:/opt/adguardhome/work
-      - ./adguard/confdir:/opt/adguardhome/conf
-    restart: always
 
   uptime-kuma:
     container_name: uptime-kuma
@@ -113,9 +120,109 @@ services:
     restart: unless-stopped
 
 
+################# SPEEDTEST STACK ##################
+  grafana:
+    restart: always
+    image: grafana/grafana:6.7.2
+    volumes:
+      - "./speedtest-grafana/grafana/provisioning:/etc/grafana/provisioning"
+    ports:
+      - "{{ GRAFANA_PORT }}:3000"
+    environment:
+      - "GF_SERVER_ROOT_URL=http://localhost"
+      - "GF_SECURITY_ADMIN_PASSWORD={{ GRAFA_ADMIN_PASSWORD }}"
+      - "GF_AUTH_ANONYMOUS_ENABLED=true"
+    depends_on:
+      - influxdb
+
+  speedtest:
+    restart: always
+    image: frdmn/speedtest-grafana:latest
+    container_name: speedtest
+    environment:
+      - "SPEEDTEST_INTERVAL={{ SPEEDTEST_INTERVAL }}"
+      - "SPEEDTEST_HOST=local"
+    depends_on:
+      - influxdb
+
+  influxdb:
+    restart: always
+    image: influxdb:1.8
+    ports:
+      - "8086:8086"
+    volumes:
+      - "./speedtest-grafana/influxdb/:/var/lib/influxdb"
+    environment:
+      - "INFLUXDB_ADMIN_USER={{ INFLUX_DB_ADMIN }}"
+      - "INFLUXDB_ADMIN_PASSWORD={{ INFLUX_DB_ADM_PASS }}"
+      - "INFLUXDB_DB=speedtest"
 
 
-########### SYNCTHING #############
+
+############# WALLABAG STACK #################
+
+  wallabag:
+    image: wallabag/wallabag
+    restart: unless-stopped
+    container_name: wallabag
+    environment:
+      - MYSQL_ROOT_PASSWORD="{{ WALLABAG_MYSQL_ROOT_PASSWORD }}"
+      - SYMFONY__ENV__DATABASE_DRIVER=pdo_mysql
+      - SYMFONY__ENV__DATABASE_HOST=db
+      - SYMFONY__ENV__DATABASE_PORT=3306
+      - SYMFONY__ENV__DATABASE_NAME="{{ WALLABAG_DB_NAME }}"
+      - SYMFONY__ENV__DATABASE_USER="{{ WALLABAG_DB_USER }}"
+      - SYMFONY__ENV__DATABASE_PASSWORD="{{ WALLABAG_DB_PASS }}"
+      - SYMFONY__ENV__DATABASE_CHARSET=utf8mb4
+      - SYMFONY__ENV__MAILER_HOST=127.0.0.1
+      - SYMFONY__ENV__MAILER_USER=~
+      - SYMFONY__ENV__MAILER_PASSWORD=~
+      - SYMFONY__ENV__FROM_EMAIL=wallabag@example.com
+      - SYMFONY__ENV__DOMAIN_NAME=https://wallabag."{{ domain_name }}"
+      - SYMFONY__ENV__SERVER_NAME="Your wallabag instance"
+    ports:
+      - "8765:80"
+    volumes:
+      - /mnt/ssd/wallabag/data:/var/www/wallabag/web/assets/images
+    healthcheck:
+      test: ["CMD", "wget" ,"--no-verbose", "--tries=1", "--spider", "http://localhost"]
+      interval: 1m
+      timeout: 3s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallabag-secure.entrypoints=https"
+      - "traefik.http.routers.wallabag-secure.rule=Host(`wallabag.{{ domain_name }}`)"
+      - "traefik.http.routers.wallabag-secure.tls=true"
+      - "traefik.http.routers.wallabag-secure.service=wallabag"
+      - "traefik.http.services.wallabag.loadbalancer.server.port=8765"
+      - "traefik.docker.network=proxy"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mariadb
+    restart: unless-stopped
+    container_name: wallabagDB
+    environment:
+      - MYSQL_ROOT_PASSWORD="{{ WALLABAG_DB_ROOT_PASS }}"
+    volumes:
+      - /mnt/ssd/wallabag/db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 3s
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    container_name: wallabagRedis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 20s
+      timeout: 3s
+
+################# SYNCTHING ##################
   syncthing:
     image: ghcr.io/linuxserver/syncthing
     container_name: syncthing
