@@ -1,23 +1,29 @@
 [proxmox]
 File-Server ansible_host="{{ filesvr_host_ip }}"
-Media-Server ansible_host="{{ mediasvr_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+Media-Server ansible_host="{{ mediasvr_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" 
 Proxy ansible_host="{{ proxy_host_ip }}"
 PrivateVPN ansible_host="{{ privatevpn_host_ip }}"
 Portainer ansible_host="{{ portainer_host_ip }}"
 Nextcloud ansible_host="{{ nextcloud_host_ip }}"
-Logs ansible_host="{{ logs_host_ip }}"
+Logs ansible_host="{{ logs_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" 
 Ansible ansible_host="{{ ansible_host_ip }}"
 Gitlab ansible_host="{{ gitlab_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 Tailscale ansible_host="{{ tailscale_host_ip }}"
-Nebula ansible_host="{{ nebula_host_ip }}"
-Kub01 ansible_host="{{ kub01_host_ip }}"
+#Nebula ansible_host="{{ nebula_host_ip }}"
+#Kub01 ansible_host="{{ kub01_host_ip }}"
+
+[kubernetes]
+Kub-Master ansible_host="{{ kubMaster_host_ip }}"
+Kub-Work-1 ansible_host="{{ kubWork1_host_ip }}"
+Kub-Work-2 ansible_host="{{ kubWork2_host_ip }}"
 
 [workstation]
-Gaming ansible_host="{{ gamingvm_host_ip }}"
+Dominator ansible_host="{{ dominator_host_ip }}"
 Lenovo-Latop ansible_host="{{ lenovolatop_host_ip }}"
 
 [cloud]
 Oracle-Arm ansible_host="{{ oracle_host_ip }}"
 
 [thanos]
-Baby-Thanos ansible_host="{{ babythanos_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+Baby-Thanos ansible_host="{{ babythanos_host_ip }}" ansible_user="{{ ansible_user_pre }}" ansible_ssh_pass="{{ ansible_become_pass_pre }}" ansible_port="{{ ansible_port_pre }}"
+Virt-Box-Ubuntu ansible_host="{{ virtbox_ubuntu_host_ip }}" ansible_user="{{ virtbox_ubuntu_user_pre }}" ansible_become_pass="{{ virtbox_ubuntu_pass_pre }}" ansible_port="{{ ansible_port_pre }}"

@@ -42,3 +42,23 @@
         mode: 0600
       with_fileglob:
         - "../../../scripts/oracle-arm/*"
+
+    - name: Script Distribution for Proxmox LXC
+      when: ('proxmox' in group_names and inventory_hostname != 'ProxmoxMaster')
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/root/scripts/"
+        owner: "root"
+        mode: 0600
+      with_fileglob:
+        - "../../../scripts/proxmox/sysctl_status_recover.sh"
+
+    - name: Smb Conf for File-Server
+      when: inventory_hostname == 'File-Server'
+      become: true
+      ansible.builtin.copy:
+        src: files/smb.conf
+        dest: "/etc/samba/smb.conf"
+        owner: "root"
+        mode: 0640

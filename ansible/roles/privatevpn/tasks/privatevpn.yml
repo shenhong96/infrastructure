@@ -1,5 +1,5 @@
 - name: Include PrivateVPN variables
-  include_vars: 
+  include_vars:
     dir: vars
 
 - name: Create PrivateVPN directory
