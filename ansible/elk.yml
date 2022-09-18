@@ -1,0 +1,6 @@
+---
+- name: ELK Stack
+  hosts: Virt-Box-Ubuntu
+  become: yes
+  roles:
+    - elk

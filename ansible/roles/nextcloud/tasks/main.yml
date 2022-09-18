@@ -1,5 +1,3 @@
----
-
     - name: Get timestamp from the system
       shell: "date +%d-%m-%Y"
       register: tstamp_ns
@@ -44,7 +42,7 @@
 
     - name: Copy Web-Server code.
       copy:
-        src: "/var/www/nextcloud-{{ tstamp_ns.stdout[10:]}}/config/config.php"
+        src: "/var/www/nextcloud-{{ tstamp_ns.stdout}}/config/config.php"
         dest: "/var/www/nextcloud/config/config.php"
         remote_src: yes
 

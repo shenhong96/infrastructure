@@ -1,7 +1,0 @@
----
-# handlers file for flask_web
-    - name: Restart docker
-      ansible.builtin.shell:
-        cmd: docker-compose up -d
-        chdir: /root
-      register: results
