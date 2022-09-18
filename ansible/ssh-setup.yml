@@ -1,5 +1,5 @@
 ---
-- name: SSH Setup and Security Tightening
+- name: SSH Setup and Security Tightening Process.
   hosts: all
   become: yes
   ignore_unreachable: yes

@@ -1,0 +1,16 @@
+---
+    - name: Cron for LXC to fix systemd sshd bug
+      when: ('proxmox' in group_names and inventory_hostname != 'ProxmoxMaster')
+      ansible.builtin.cron:
+        name: cronjob managed by ansible
+        special_time: hourly
+        job: "bash /root/scripts/sysctl_status_recover.sh"
+
+    - name: Cron for File-Server
+      when: inventory_hostname == 'File-Server'
+      ansible.builtin.cron:
+        name: cronjob for restics
+        special_time: daily
+        job: "autorestic -c ~/.autorestic.yml --ci cron"
+
+

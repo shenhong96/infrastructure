@@ -1,0 +1,2 @@
+elastic_gpg_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+elastic_src_repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"

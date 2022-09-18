@@ -1,1 +1,5 @@
 adguard_ver: "v0.107.10"
+syncthing_ver: "1.21.0"
+wallabag_ver: "2.5.1"
+photoprism_ver: "220901-bookworm"
+portainer_ver: "linux-amd64-2.15.0"

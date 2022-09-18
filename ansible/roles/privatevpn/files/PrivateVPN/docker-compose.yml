@@ -38,7 +38,7 @@ services:
     volumes:
       - ./wireguard/config:/config
       - /lib/modules:/lib/modules
-    restart: unless-stopped
+    restart: always
     <<: *exposed_port
     <<: *local
 
@@ -52,9 +52,9 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - ./qbittorrent/config:/config
-      - /mnt/downloads:/downloads
+      - {{ download_path }}:/downloads
     network_mode: "service:vpn"
-    restart: unless-stopped
+    restart: always
 
   prowlarr:
     image: ghcr.io/linuxserver/prowlarr:{{ prowlarr_ver }}
@@ -70,8 +70,8 @@ services:
     container_name: radarr
     volumes:
       - ./radarr:/config
-      - /mnt/media/Movies:/media #optional
-      - /mnt/downloads:/downloads #optional
+      - {{ movie_path }}:/media #optional
+      - {{ download_path }}:/downloads #optional
     <<: *vpn
 
   sonarr:
@@ -79,8 +79,8 @@ services:
     container_name: sonarr
     volumes:
       - ./sonarr:/config
-      - /mnt/media/TV_Shows:/media #optional
-      - /mnt/downloads:/downloads #optional
+      - {{ tv_path }}:/media #optional
+      - {{ download_path }}:/downloads #optional
     <<: *vpn
 
   lidarr:
@@ -89,7 +89,7 @@ services:
     volumes:
       - ./lidarr/config:/config
       - /mnt/media/Music:/media #optional
-      - /mnt/downloads:/downloads #optional
+      - {{ download_path }}:/downloads #optional
     <<: *vpn
 
   bazarr:
@@ -97,9 +97,9 @@ services:
     container_name: bazarr
     volumes:
       - ./bazarr/config:/config
-      - /mnt/media/Movies:/media/movies #optional
-      - /mnt/media/TV_Shows:/media/tv #optional
-      - /mnt/downloads:/downloads
+      - {{ movie_path }}:/media/movies #optional
+      - {{ tv_path }}:/media/tv #optional
+      - {{ download_path }}:/downloads
     <<: *vpn
 
   readarr:
@@ -107,9 +107,24 @@ services:
     container_name: readarr
     volumes:
       - ./readarr/data:/config
-      - /mnt/media/Books:/media #optional
-      - /mnt/downloads:/downloads #optional
+      - {{ book_path }}:/media #optional
+      - {{ download_path }}:/downloads #optional
     <<: *vpn
+
+  jellyseerr:
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:{{ jellyseerr_ver }}
+    volumes:
+      - ./jellyseerr:/app/config
+    ports:
+      - 5055:5055
+    environment:
+      TZ: Asia/Kuala_Lumpur
+      PGID: 1000
+      PUID: 1000
+    networks:
+      - internal
+    restart: always
 
   portainer:
     image: 'cr.portainer.io/portainer/agent'

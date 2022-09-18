@@ -1,4 +1,10 @@
 ---
+- name: Hypervisor Host Stack
+  hosts: ProxmoxMaster
+  become: yes
+  roles:
+    - host_docker
+
 - name: PrivateVPN Stack
   hosts: PrivateVPN
   become: yes
