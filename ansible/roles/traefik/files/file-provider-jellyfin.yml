@@ -7,4 +7,4 @@ http:
     service-jellyfin:
       loadBalancer:
         servers:
-          - url: http://{{ mediasvr_host_ip }}:8096
+          - url: http://{{ pve_hosts.media-server }}:8096

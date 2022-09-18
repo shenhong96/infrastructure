@@ -1,0 +1,12 @@
+- name: Include variables
+  include_vars:
+    file: main.yml
+
+- name: Install restic config
+  become: true
+  when: inventory_hostname == 'File-Server'
+  template:
+    src: "files/autorestic.yml"
+    dest: "/root/.autorestic.yml"
+    mode: 0600
+    owner: "root"

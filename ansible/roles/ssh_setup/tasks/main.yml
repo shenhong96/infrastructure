@@ -4,9 +4,9 @@
       user:
         name: "{{ username }}"
         state: present
-        comment: An ansible user used by ansible LXC to manage this server
+        comment: "An ansible user used by ansible LXC to manage this server"
         password: "{{ ansible_user_password }}"
-        shell: /bin/bash
+        shell: "/bin/bash"
 
     - name: Setup alternate SSH port on sshd_config
       lineinfile:
@@ -14,14 +14,16 @@
         regexp: "^Port"
         line: "{{ ssh_port }}"
 
-    - name: Setup Locale
-      shell: "export LC_ALL=en_US.UTF-8"
+    - name: Ensure a locale exists
+      community.general.locale_gen:
+        name: en_US.UTF-8
+        state: present
 
     - name: Allow/Disallow Password Authentication
       lineinfile:
         dest: "/etc/ssh/sshd_config"
         regexp: "^PermitRootLogin"
-        line: "PermitRootLogin prohibit-password" 
+        line: "PermitRootLogin prohibit-password"
               #options: yes, no, prohibit-password
       notify: "Restart sshd"
 
@@ -29,16 +31,20 @@
       lineinfile:
         dest: "/etc/systemd/system/sockets.target.wants/ssh.socket"
         regexp: "^ListenStream"
-        line: "{{ systemd_ssh_port }}" 
+        line: "{{ systemd_ssh_port }}"
       ignore_errors: yes
-      notify: "Restart sshd"   
+      notify: "Restart sshd"
 
-    - name: Transfer Pub Key
+    - name: Set up any other authorized keys
       ansible.posix.authorized_key:
         user: "{{ username }}"
         state: present
-        key: "{{ lookup('file', '/root/.ssh/id_ed25519.pub') }}"
-        
+        key: '{{ item }}'
+      with_file:
+        - files/pubkey0
+        - files/pubkey1
+        - files/pubkey2
+
     - name: Sudoer amendments
       lineinfile:
         path: /etc/sudoers

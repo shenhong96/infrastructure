@@ -1,9 +1,9 @@
 - name: restart aio
-  shell:
+  command:
     chdir: /opt/aio
     cmd: "{{ docker_update_command }}"
 
 - name: restart photoprism
-  shell:
+  command:
     chdir: /opt/photoprism
     cmd: "{{ docker_update_command }}"

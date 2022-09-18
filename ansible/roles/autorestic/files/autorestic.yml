@@ -1,0 +1,33 @@
+version: 2
+backends:
+  b2-proxmox-backup:
+    type: b2
+    path: Proxmox-Dump
+    key: "{{ proxmox_backup_bucket_key }}"
+    env:
+      b2_account_id: "{{ b2_account_id }}"
+      b2_account_key: "{{ b2_account_key }}"
+  personal-archive:
+    type: b2
+    path: looi-archive
+    key: "{{ personal_archive_bucket_key }}"
+    env:
+      b2_account_id: "{{ b2_account_id }}"
+      b2_account_key: "{{ b2_account_key }}"
+locations:
+  personalfiles:
+    from:
+    - /mnt/proxmox-host/samba-share
+    to:
+    - personal-archive
+    cron: 0 1 * * 0
+    options:
+      backup:
+        exclude:
+        - F-T-Purpose
+  proxmoxbackup:
+    from:
+    - /mnt/proxmox-host/backups/proxmox/dump
+    to:
+    - b2-proxmox-backup
+    cron: 0 0 1,15 * *

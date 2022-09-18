@@ -8,13 +8,6 @@ x-lsio: &lsio
     - TZ=Asia/Kuala_Lumpur
 
 services:
-
-
-
-
-
-
-
   adguardhome:
     image: adguard/adguardhome:{{ adguard_ver }}
     container_name: adguard-home2
@@ -119,8 +112,49 @@ services:
     shm_size: "4gb" #optional
     restart: unless-stopped
 
+  healthchecks:
+    image: lscr.io/linuxserver/healthchecks:latest
+    container_name: healthchecks
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - SITE_ROOT=https://healthcheck.{{ domain_name }}:8078
+      - SITE_NAME=Homelab Health Check For Crontab
+      #- DEFAULT_FROM_EMAIL=<DEFAULT_FROM_EMAIL>
+      #- EMAIL_HOST=<EMAIL_HOST>
+      #- EMAIL_PORT=<EMAIL_PORT>
+      #- EMAIL_HOST_USER=<EMAIL_HOST_USER>
+      #- EMAIL_HOST_PASSWORD=<EMAIL_HOST_PASSWORD>
+      #- EMAIL_USE_TLS=<True or False>
+      #- SUPERUSER_EMAIL=<SUPERUSER_EMAIL>
+      #- SUPERUSER_PASSWORD=<SUPERUSER_PASSWORD>
+      #- REGENERATE_SETTINGS=True/False #optional
+      #- SITE_LOGO_URL=<SITE_LOGO_URL> #optional
+      - ALLOWED_HOSTS=["healthcheck.{{ domain_name }}","192.168.9.151"] #optional
+      #- SECRET_KEY=<SECRET_KEY> #optional
+      #- APPRISE_ENABLED=True/False #optional
+    volumes:
+      - ./healthcheck:/config
+    ports:
+      - 8078:8000
+    restart: unless-stopped
 
-################# SPEEDTEST STACK ##################
+#################### PORTAINER #####################
+  portainer-ce:
+    image: portainer/portainer-ce:{{ portainer_ver }}
+    container_name: portainer
+    networks:
+      - traefik
+    command: -H unix:///var/run/docker.sock
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+      - 8000:8000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer:/data
+
+################# SPEEDTEST GRAFANA STACK ##################
   grafana:
     restart: always
     image: grafana/grafana:6.7.2
@@ -162,7 +196,7 @@ services:
 ############# WALLABAG STACK #################
 
   wallabag:
-    image: wallabag/wallabag
+    image: wallabag/wallabag:{{ wallabag_ver }}
     restart: unless-stopped
     container_name: wallabag
     environment:
@@ -224,7 +258,7 @@ services:
 
 ################# SYNCTHING ##################
   syncthing:
-    image: ghcr.io/linuxserver/syncthing
+    image: ghcr.io/linuxserver/syncthing:{{ syncthing_ver }}
     container_name: syncthing
     hostname: syncthing #optional
     networks:

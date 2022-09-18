@@ -1,0 +1,92 @@
+---
+    - name: Apply cache update and system upgrade.
+      apt:
+        update_cache: true
+        upgrade: yes
+
+    - name: Install dependencies
+      apt:
+        name:
+          - curl
+          - openssh-server
+          - apt-transport-https
+        state: present
+        purge: true
+        autoclean: true
+
+    - name: Add Elastic gpg key
+      ansible.builtin.apt_key:
+        url: "{{ elastic_gpg_url }}"
+        keyring: /usr/share/keyrings/elastic.gpg
+        state: present
+
+    - name: Add Elastic Official Repo
+      ansible.builtin.apt_repository:
+        repo: "{{ elastic_src_repo }}"
+        state: present
+
+    - name: Install Elastic Stack
+      apt:
+        state: present
+        name:
+          - elasticsearch
+          - logstash
+          - kibana
+          - filebeat
+
+    - name: Elastic xpack config
+      lineinfile:
+        dest: "/etc/elasticsearch/elasticsearch.yml"
+        regexp: "^xpack.security.enabled: true"
+        line: "xpack.security.enabled: false"
+
+    - name: Prevent Elastic OOM Start - step 1
+      lineinfile:
+        dest: "/etc/default/elasticsearch"
+        insertafter: "^#RESTART_ON_UPGRADE=true"
+        line: "{{ item.line }}"
+      loop:
+        - line: 'ES_JAVA_OPTS="-Xms4g -Xmx4g"'
+        - line: 'MAX_LOCKED_MEMORY=unlimited'
+
+    - name: Prevent Elastic OOM Start - step 2
+      lineinfile:
+        dest: "/etc/security/limits.conf"
+        insertafter: "^#@Student"
+        line: "{{ item.line }}"
+      loop:
+        - line: 'elasticsearch soft memlock unlimited'
+        - line: 'elasticsearch hard memlock unlimited'
+
+    - name: Prevent Elastic OOM Start - step 3
+      lineinfile:
+        dest: "/usr/lib/systemd/system/elasticsearch.service"
+        insertafter: "^LimitAS=infinity"
+        line: 'LimitMEMLOCK=infinity'
+      notify:
+        - Daemon Reload
+        - Start Elastic
+
+    - name: Filebeat collection configuration file
+      template:
+        src: "files/logstash-beats.conf"
+        dest: "/etc/logstash/conf.d/beats.conf"
+        mode: "644"
+        owner: "root"
+      notify: Start Logstash
+
+    - name: Filebeat configuration file
+      template:
+        src: "files/filebeat.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        mode: "644"
+        owner: "root"
+      notify: Start Filebeat
+
+    - name: Kibana configuration
+      template:
+        src: "files/kibana.yml"
+        dest: "/etc/kibana/kibana.yml"
+        mode: "644"
+        owner: "root"
+      notify: Start Kibana

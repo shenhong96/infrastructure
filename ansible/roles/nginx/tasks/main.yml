@@ -11,8 +11,8 @@
   register: compose_file
   become: true
 
-- name: restart PrivateVPN
-  shell:
+- name: restart Nginx Proxy Manager
+  command:
     chdir: /opt
     cmd: "{{ docker_update_command }}"
   when: compose_file.changed

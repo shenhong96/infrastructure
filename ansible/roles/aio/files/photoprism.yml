@@ -42,7 +42,7 @@ services:
     container_name: photoprism_wife
     ## Use photoprism/photoprism:preview for testing preview builds:
     restart: unless-stopped
-    image: photoprism/photoprism:latest
+    image: photoprism/photoprism:{{ photoprism_ver }}
     depends_on:
       - mariadb
     ## Don't enable automatic restarts until PhotoPrism has been properly configured and tested!

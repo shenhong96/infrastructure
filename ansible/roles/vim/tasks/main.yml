@@ -1,12 +1,39 @@
 ---
-# tasks file for flask_web
-    - name: Install vim
-      apt:
-        name: 
-          - vim
-        state: present
+- name: Install the components
+  apt:
+    name: 
+      - tmux
+      - vim
+      - git
+      - xclip
+    state: present
 
-    - name: Copy vimrc files
-      copy:
-        src: files/vimrc
-        dest: /root/.vimrc
+- name: Create directory
+  file:
+    path: ~/.vim/pack/themes/start
+    state: directory
+  become: true
+
+- name: git clone dracula theme vim
+  git:
+    repo: https://github.com/dracula/vim.git
+    dest: ~/.vim/pack/themes/start/dracula
+    clone: yes
+    version: master
+
+- name: git clone tmux plugins manager
+  git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: ~/.tmux/plugins/tpm
+    clone: yes
+    version: master
+
+- name: Copy vimrc files
+  copy:
+    src: files/vimrc
+    dest: /root/.vimrc
+
+- name: Copy tmux config files
+  copy:
+    src: files/tmux.conf
+    dest: /root/.tmux.conf
