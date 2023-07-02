@@ -19,7 +19,7 @@ To install and run this project, follow these steps:
 ### Prerequisites
 
 - You need to have Ansible installed on your machine. For more information, see [Ansible Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
-- You need to have Docker installed on your machine. For more information, see [Docker Installation Guide](https://docs.docker.com/engine/install/).
+- You need to have Docker installed on your target host machine. For more information, see [Docker Installation Guide](https://docs.docker.com/engine/install/).
 - You need to have access to the hosts that you want to deploy and configure the services on.
 
 ### Running the Project
@@ -28,4 +28,4 @@ To install and run this project, follow these steps:
 - Edit the `hosts` file in the root folder of the repo and add the IP addresses or hostnames of your target hosts under the appropriate groups.
 - Edit the `group_vars` folder and add any variables that are specific to each group of hosts, such as passwords, domains, ports, etc.
 - Edit the `roles` folder and add any tasks that are specific to each role or service, such as templates, files, commands, etc.
-- Run `ansible-playbook playbook.yml` to execute the playbook and deploy and configure the services.
+- Run `ansible-playbook main.yaml` to execute the playbook and deploy and configure the services.
