@@ -13,12 +13,12 @@ Tailscale ansible_host="{{ tailscale_host_ip }}"
 #Kub01 ansible_host="{{ kub01_host_ip }}"
 
 [kubernetes]
-Kub-Master ansible_host="{{ kubMaster_host_ip }}"
-Kub-Work-1 ansible_host="{{ kubWork1_host_ip }}"
-Kub-Work-2 ansible_host="{{ kubWork2_host_ip }}"
+Kub-Master ansible_host="{{ kubMaster_host_ip }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+Kub-Work-1 ansible_host="{{ kubWork1_host_ip }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+Kub-Work-2 ansible_host="{{ kubWork2_host_ip }}" ansible_port="{{ ansible_port_pre }}" ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [workstation]
-Dominator ansible_host="{{ dominator_host_ip }}"
+Gaming ansible_host="{{ gamingvm_host_ip }}"
 Lenovo-Latop ansible_host="{{ lenovolatop_host_ip }}"
 
 [cloud]

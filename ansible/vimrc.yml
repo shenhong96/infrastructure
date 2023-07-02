@@ -1,7 +1,0 @@
----
-- name: Setup vimrc
-  hosts: all
-  become: yes
-  ignore_unreachable: yes
-  roles:
-    - vim

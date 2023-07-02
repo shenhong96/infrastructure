@@ -1,0 +1,56 @@
+---
+- name: Bootstrap
+  hosts: all
+  become: true
+  roles:
+    - ssh_setup
+    - cron
+    - distribution
+    - logs
+    - vim
+
+- name: Hypervisor Host Stack
+  hosts: ProxmoxMaster
+  become: true
+  roles:
+    - host_docker
+
+
+- name: PrivateVPN Stack
+  hosts: PrivateVPN
+  become: true
+  roles:
+    - privatevpn
+    
+
+- name: Main Docker Stacks
+  hosts: Portainer
+  become: true
+  roles:
+    - traefik
+    - aio
+    - adguard
+
+- name: Reverse Proxy
+  hosts: Proxy
+  become: true
+  roles:
+    - nginx
+
+- name: Jellyfin
+  hosts: Media-Server
+  become: true
+  roles:
+    - jellyfin
+
+- name: File-Server
+  hosts: File-Server
+  become: true
+  roles:
+    - autorestic
+
+- name: Setup Gitlab 
+  hosts: Gitlab
+  become: true
+  roles:
+    - gitlab

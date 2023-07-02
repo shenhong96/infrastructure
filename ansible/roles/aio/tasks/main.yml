@@ -18,6 +18,14 @@
     mode: "{{ docker_compose_directory_mask }}"
   become: true
 
+- name: Install Homer Config File
+  template:
+    src: files/homer.yml
+    dest: /opt/aio/homer/config/config.yml
+    mode: "{{ docker_compose_file_mask }}"
+    owner: "{{ docker_user.name }}"
+  become: true
+
 - name: Install AIO compose file
   template:
     src: files/docker-compose.yml

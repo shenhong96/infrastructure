@@ -1,4 +1,9 @@
 ---
+x-monitoring: &loki
+  labels:
+    logging: "promtail"
+    logging_jobname: "containerlogs"
+    
 version: "2.3"
 services:
   traefik:
@@ -18,6 +23,7 @@ services:
     networks:
       - default
       - traefik
+    <<: *loki
 
   certs:
     image: slocomptech/traefik-cert-extract:latest
@@ -28,6 +34,7 @@ services:
       - ./certs:/config/certs
     logging:
       driver: none
+    <<: *loki
 
 networks:
   traefik:

@@ -1,0 +1,25 @@
+- name: Create Adguard directory
+  file:
+    path: /opt/adguard
+    state: directory
+    owner: "{{ docker_user.name }}"
+    mode: "{{ docker_compose_directory_mask }}"
+  become: true
+
+- name: Adguard configuration
+  template:
+    src: files/config.yaml
+    dest: /opt/adguard/confdir/AdGuardHome.yaml
+    mode: "{{ docker_compose_file_mask }}"
+    owner: "{{ docker_user.name }}"
+  become: true
+
+- name: Install Adguard compose file
+  template:
+    src: files/docker-compose.yml
+    dest: /opt/adguard/docker-compose.yml
+    mode: "{{ docker_compose_file_mask }}"
+    owner: "{{ docker_user.name }}"
+    validate: docker-compose -f %s config
+  notify: restart adguard
+  become: true

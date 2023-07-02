@@ -1,0 +1,22 @@
+enable_promtail_docker: false
+
+# CRON JOB roles/cron
+healcheckio_autorestic_webhook: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34396466363732663463356336623663353537396363643436343235353536363866383535303763
+          3135633235643836373561383339336534393231343439360a653165373933373934343939656164
+          30313637333665353466616665376566323733386463663837383538386637393264326261386362
+          3530626434303161320a373861373363373061396630646161343866306235636239646437373361
+          34306636316462343537383266653339366231336436323830303533656637633339316434373436
+          3639303433346461313830366535636532363262643730356366
+
+daily_cronjobs:
+  - name: Autorestic Backup Job
+    hour: 2
+    job: "autorestic -c ~/.autorestic.yml --ci cron && curl -fsS -m 10 --retry 5 -o /dev/null https://health.ahlooii.com/ping/{{ healcheckio_autorestic_webhook }}"
+
+## SCRIPT DISTRIBUTION roles/distribution
+script_distribution:
+  - src: "files/smb.conf"
+    dest: "/etc/samba/smb.conf"
+    mode: "0640"

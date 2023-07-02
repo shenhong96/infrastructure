@@ -1,0 +1,22 @@
+---
+- name: Setup K8s Master Node
+  hosts: Kub-Master
+  become: true
+  roles:
+    - kubeadm
+  tags:
+    - base
+    - master_node
+
+- name: Setup K8s Worker Node 
+  hosts:
+    - Kub-Work-1
+    - Kub-Work-2 
+  become: true
+  roles:
+    - kubeadm
+  tags:
+    - base
+    - worker_nodes
+
+

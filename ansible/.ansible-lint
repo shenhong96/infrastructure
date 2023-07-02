@@ -1,0 +1,5 @@
+skip_list:
+  - '503'
+  - '305'
+  - '204'
+  - 'internal-error'

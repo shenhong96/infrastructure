@@ -1,0 +1,4 @@
+- name: restart monitoring
+  shell:
+    chdir: "{{ docker_compose_path }}/monitoring"
+    cmd: "{{ docker_update_command }}"

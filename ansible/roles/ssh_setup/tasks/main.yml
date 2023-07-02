@@ -4,20 +4,15 @@
       user:
         name: "{{ username }}"
         state: present
-        comment: "An ansible user used by ansible LXC to manage this server"
+        comment: An ansible user used by ansible LXC to manage this server
         password: "{{ ansible_user_password }}"
-        shell: "/bin/bash"
+        shell: /bin/bash
 
     - name: Setup alternate SSH port on sshd_config
       lineinfile:
         dest: "/etc/ssh/sshd_config"
         regexp: "^Port"
-        line: "{{ ssh_port }}"
-
-    - name: Ensure a locale exists
-      community.general.locale_gen:
-        name: en_US.UTF-8
-        state: present
+        line: "Port {{ ssh_port }}"
 
     - name: Allow/Disallow Password Authentication
       lineinfile:
@@ -31,11 +26,11 @@
       lineinfile:
         dest: "/etc/systemd/system/sockets.target.wants/ssh.socket"
         regexp: "^ListenStream"
-        line: "{{ systemd_ssh_port }}"
-      ignore_errors: yes
+        line: "ListenStream={{ ssh_port }}"
+      ignore_errors: true
       notify: "Restart sshd"
 
-    - name: Set up any other authorized keys
+    - name: Set up authorized keys
       ansible.posix.authorized_key:
         user: "{{ username }}"
         state: present

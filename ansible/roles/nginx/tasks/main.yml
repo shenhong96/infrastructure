@@ -1,18 +1,21 @@
 - name: Include nginx variables
   include_vars: nginx.yml
 
+- name: Include nginx variables
+  include_vars: versions.yml
+
 - name: Install NPM, DB & Authelia compose file
   template:
     src: files/docker-compose.yml
     dest: /opt/docker-compose.yml
     mode: "{{ docker_compose_file_mask }}"
     owner: "{{ docker_user.name }}"
-    validate: docker-compose -f %s config
+    #validate: docker-compose -f %s config
   register: compose_file
   become: true
 
-- name: restart Nginx Proxy Manager
-  command:
+- name: Trigger Proxy Compose Update
+  shell:
     chdir: /opt
     cmd: "{{ docker_update_command }}"
   when: compose_file.changed

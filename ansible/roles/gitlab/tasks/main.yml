@@ -1,10 +1,5 @@
 ---
 # tasks file for gitlab, refers to https://linuxhint.com/install-gitlab-ubuntu-22-04/
-    - name: Apply cache update and system upgrade.
-      apt:
-        update_cache: true
-        upgrade: yes
-
     - name: Install dependencies 
       apt:
         name:
@@ -42,14 +37,10 @@
         state: present
         name: 
           - gitlab-ce
+      notify: 
+        - "Reconfigure gitlab-ce"
 
-    - name: Start Gitlab for first time.
-      command: gitlab-ctl reconfigure
-      become: true
-      become_user: root
-#      failed_when: false
-
-    - name: Setup URL Domain for Gitlab
+    - name: Set URL for Gitlab
       lineinfile:
         dest: "/etc/gitlab/gitlab.rb"
         regexp: "^external_url"

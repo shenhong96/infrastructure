@@ -1,9 +1,0 @@
-#!/bin/bash
-if [[ -z $1 ]] ; then
-	echo "Please include \$1 argument as your commit message" 
-	exit 1
-fi
-git checkout -b shenhong
-git add .
-git commit -m "$1"
-git push origin shenhong

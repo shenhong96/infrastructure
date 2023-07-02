@@ -1,0 +1,21 @@
+variables:
+  COMPOSE_FILE: ssh-setup.yml
+  COMPOSE_FILE2: vimrc.yml
+
+bootstrap-job:
+  stage: deploy
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+        - ansible/roles/vim/**/*
+        - ansible/roles/ssh_setup/**/*
+        - ansible/hosts
+        - ansible/roles/distribution/**/*        
+        - ansible/roles/autorestic/**/*
+        - ansible/roles/cron/**/* 
+    - if: '$DEPLOY == "bootstrap"'
+      when: manual
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook main.yaml

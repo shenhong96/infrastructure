@@ -1,0 +1,4 @@
+- name: restart adguard
+  shell:
+    chdir: /opt/adguard
+    cmd: "{{ docker_update_command }}"

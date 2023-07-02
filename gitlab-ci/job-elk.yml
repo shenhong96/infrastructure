@@ -1,0 +1,12 @@
+variables:
+  COMPOSE_FILE: elk.yml
+
+elk-deploy:
+  stage: deploy
+  rules:
+    - if: '$DEPLOY == "elk"'
+      when: manual
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook elk.yml
