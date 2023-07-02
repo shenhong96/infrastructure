@@ -1,0 +1,42 @@
+---
+# This role installs and configures grafana loki and promtail with docker-compose on Ubuntu
+    - name: Include variables
+      include_vars:
+        dir: vars
+
+    # Create the directories for configuration and data
+    - name: Create directories for configuration and data
+      file:
+        path: "{{ docker_compose_path }}/monitoring/{{ item }}"
+        state: directory
+        owner: "{{ docker_default_user }}"
+        mode: "{{ docker_compose_directory_mask }}"
+      loop:
+        - "{{ loki_config_dir }}"
+        - "{{ promtail_config_dir }}"
+
+    # Generate the configuration files for loki and promtail from templates
+    - name: Generate the configuration files for promtail from templates
+      template:
+        src: "files/promtail.yaml.j2"
+        dest: "{{ docker_compose_path }}/monitoring/{{ promtail_config_dir }}/promtail-config.yaml"
+        owner: "{{ docker_default_user }}"
+        mode: "{{ docker_compose_file_mask }}"
+
+    - name: Generate the configuration files for loki from templates
+      template:
+        src: "files/loki.yaml.j2"
+        dest: "{{ docker_compose_path }}/monitoring/{{ loki_config_dir }}/loki-config.yaml"
+        owner: "{{ docker_default_user }}"
+        mode: "{{ docker_compose_file_mask }}"
+      when: loki_master
+
+    # Download the docker-compose file for loki and promtail
+    - name: Install the docker-compose file
+      template:
+        src: files/docker-compose.yaml.j2
+        dest: "{{ docker_compose_path }}/monitoring/docker-compose.yml"
+        mode: "{{ docker_compose_file_mask }}"
+        owner: "{{ docker_default_user }}"
+        #validate: docker-compose -f %s config
+      notify: restart monitoring

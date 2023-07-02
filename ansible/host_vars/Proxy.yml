@@ -1,0 +1,3 @@
+every_5_minutes_cronjobs:
+  - name: DynDNS update
+    job: "bash /root/duckdns/duck.sh >/dev/null 2>&1"

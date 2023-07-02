@@ -1,0 +1,176 @@
+---
+version: "3.3"
+x-base: &base #define "base" as anchor key
+  restart: always 
+x-lsio: &lsio
+  environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Asia/Kuala_Lumpur
+x-internalbase: &internalbase
+  <<: *base #calling "base" and pull its value
+  networks:
+    - internal
+x-vpnbase: &vpnbase
+  <<: *base
+  network_mode: "service:vpn"
+x-lsiobase: &local
+  <<: [*internalbase, *lsio]
+x-vpnlsiobase: &vpn
+  <<: [*vpnbase, *lsio]
+
+x-wg-port: &exposed_port
+  ports:
+    - 8080:8080 #qbittorrent
+    - 7878:7878 #radarr
+    - 8989:8989 #sonarr
+    - 8686:8686 #lidarr
+    - 6767:6767 #bazarr
+    - 8787:8787 #readarr
+    - 6969:6969 #whispar
+x-monitoring: &loki
+  labels:
+    logging: "promtail"
+    logging_jobname: "containerlogs"
+services:
+  vpn:
+    image: ghcr.io/linuxserver/wireguard:1.0.20210914
+    privileged: true
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - ./wireguard/config:/config
+      - /lib/modules:/lib/modules
+    restart: always
+    <<: [*exposed_port, *local, *loki]
+
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent:4.4.5
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kuala_Lumpur
+      - WEBUI_PORT=8080
+      - DOCKER_MODS=ghcr.io/gilbn/theme.park:qbittorrent
+      - TP_THEME=plex
+    volumes:
+      - ./qbittorrent/config:/config
+      - /mnt/downloads:/downloads
+    network_mode: "service:vpn"
+    restart: always
+    <<: *loki
+
+  prowlarr:
+    image: ghcr.io/linuxserver/prowlarr:1.2.0-develop
+    container_name: prowlarr
+    volumes:
+      - ./prowlarr/config:/config
+    ports:
+      - 9696:9696
+    <<: [*local, *loki]
+
+  radarr:
+    image: ghcr.io/linuxserver/radarr:4.3.2
+    container_name: radarr
+    volumes:
+      - ./radarr:/config
+      - /mnt/media/Movies:/media #optional
+      - /mnt/downloads:/downloads #optional
+    <<: [*vpn, *loki]
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:4.0.0-develop
+    container_name: sonarr
+    volumes:
+      - ./sonarr:/config
+      - /mnt/media/TV_Shows:/media #optional
+      - /mnt/downloads:/downloads #optional
+    <<: [*vpn, *loki]
+
+  lidarr:
+    image: ghcr.io/linuxserver/lidarr:1.1.4-nightly
+    container_name: lidarr
+    volumes:
+      - ./lidarr/config:/config
+      - /mnt/media/Music:/media #optional
+      - /mnt/downloads:/downloads #optional
+    <<: [*vpn, *loki]
+
+  bazarr:
+    image: ghcr.io/linuxserver/bazarr:1.1.4
+    container_name: bazarr
+    volumes:
+      - ./bazarr/config:/config
+      - /mnt/media/Movies:/media/movies #optional
+      - /mnt/media/TV_Shows:/media/tv #optional
+      - /mnt/downloads:/downloads
+    <<: [*vpn, *loki]
+
+  readarr:
+    image: ghcr.io/linuxserver/readarr:0.1.3-develop
+    container_name: readarr
+    volumes:
+      - ./readarr/data:/config
+      - /mnt/media/Books:/media #optional
+      - /mnt/downloads:/downloads #optional
+    <<: *vpn
+
+  jellyseerr:
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:1.1.1
+    volumes:
+      - ./jellyseerr:/app/config
+    ports:
+      - 5055:5055
+    environment:
+      TZ: Asia/Kuala_Lumpur
+      PGID: 1000
+      PUID: 1000
+    networks:
+      - internal
+    restart: always
+
+  whisparr:
+    container_name: whisparr
+    image: cr.hotio.dev/hotio/whisparr:nightly-0.1.0.34
+    network_mode: "service:vpn"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Asia/Kuala_Lumpur
+    volumes:
+      - ./whisparr:/config
+      - /mnt/whisparr:/media
+      - /mnt/downloads:/downloads #optional
+    <<: *loki
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.2.1
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Asia/Kuala_Lumpur
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped
+    <<: [*internalbase, *loki]
+
+  portainer:
+    image: 'cr.portainer.io/portainer/agent'
+    container_name: portainer_agent
+    ports:
+      - '9001:9001'
+    restart: always
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/lib/docker/volumes:/var/lib/docker/volumes'
+
+networks:
+  internal:
+    external: true

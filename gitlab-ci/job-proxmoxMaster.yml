@@ -1,0 +1,19 @@
+variables:
+  COMPOSE_FILE: compose_update.yml
+  HOST: ProxmoxMaster
+
+docker-compose-proxmox:      # This job runs in the deploy stage.
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  rules:
+    - if: !reference [.default_rules, rules, if]
+      changes:
+      - ansible/roles/host_docker/**/*  
+    - if: '$DEPLOY == "proxmox"'
+      when: manual
+  before_script:
+    !reference [.get_ansible_vault, before_script]
+  script:
+    - COMPOSE_FILE=main.yaml
+    - HOST=ProxmoxMaster
+    - echo "Deploying docker on proxmox host...."
+    - !reference [.ansible_playbook, script]

@@ -1,0 +1,5 @@
+enable_promtail_docker: false
+
+reboot_cronjobs:
+  - name: Allow media server to utilize Intel QuickSync
+    job: chown root:render /dev/dri/renderD128

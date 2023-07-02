@@ -1,0 +1,10 @@
+enable_promtail_docker: false
+
+daily_cronjobs:
+  - name: Nextcloud OCC to generate preview thumbnail for image
+    job: su www-data -s /bin/bash -c "php /var/www/nextcloud/occ preview:pre-generate"
+
+## SCRIPT DISTRIBUTION
+script_distribution:
+  - src: "files/scripts/proxmox/sysctl_status_recover.sh"
+    dest: "/root/scripts"

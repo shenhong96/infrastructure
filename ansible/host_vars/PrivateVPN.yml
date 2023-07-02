@@ -1,0 +1,17 @@
+reboot_cronjobs:
+  - name: Make sure servarr stack is always up
+    job: sleep 10 && docker-compose up -d && bash ~/scripts/update_restart.sh restart
+
+every_5_minutes_cronjobs:
+  - name: VPN Healthcheck
+    job: "bash /root/scripts/vpn_disconnect_then_restart.sh"
+
+hourly_cronjobs:
+  - name: Maintain the Myannon Cookie
+    job: docker exec vpn bash /config/myannonymous.sh
+
+
+## SCRIPT DISTRIBUTION
+script_distribution:
+  - src: "files/scripts/privatevpn/"
+    dest: "/root/scripts"

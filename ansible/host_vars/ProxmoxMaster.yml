@@ -1,0 +1,39 @@
+healthcheckio_snapraid_webhook: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          63393338666337616331383964646665613966313864336237313637626364313466393465613462
+          3133663939346137376631393238666531636536366533310a663136623637646463323432663537
+          32636331343439323238633433663539626164303232643132373237376565363562346636366666
+          6466623565356237650a386465616165626232646664633437663466646130336333613663343939
+          36633761663064346666353665353765393030393839383939376639376537363862653965366633
+          3462663437353961353338663037383766353164656235393636
+
+## CRONJOB
+every_5_minutes_cronjobs:
+  - name: ZFS auto snapshot with sanoid
+    job: "bash /root/scripts/sanoid.sh"
+  - name: Open media file permission
+    job: "chmod 777 -R /mnt/storage/media"
+
+daily_cronjobs:
+  - name: LXC/VM On/Off Schedule
+    hour: 2
+    job: bash /root/scripts/lxc_off.sh 2> /tmp/crontab_script_log.txt 2>&1
+
+weekly_cronjobs:
+  - name: Run snapraid for parity
+    job: "python3 /opt/snapraid-runner/snapraid-runner.py -c /opt/snapraid-runner/snapraid-runner.conf && curl -fsS -m 10 --retry 5 -o /dev/null https://health.ahlooii.com/ping/{{ healthcheckio_snapraid_webhook }}"
+
+reboot_cronjobs:
+  - name: Mount backup USB disk
+    job: sleep 15 && mount /dev/disk/by-id/usb-WD_My_Passport_25E1_575844314131383039433158-0:0-part1 /mnt/ext-WD-MyPassport/
+  - name: Export LC settings
+    job: export LANG=en_US.utf8; export LC_ALL=en_US.utf8
+
+## SCRIPT DISTRIBUTION
+script_distribution:
+  - src: "files/scripts/proxmox/"
+    dest: "/root/scripts"
+
+## APPLICATION
+loki_master: true
+enable_promtail_docker: true

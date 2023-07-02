@@ -1,0 +1,26 @@
+# CRON JOB roles/cron
+healthcheckio_wireguard_revive_webhook: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30653736363237653634383138333835386362666462373261323738376138666164323039366139
+          3366613364323433643334666531626536653930636636610a306261666235353537336363373264
+          66343865326334373365333839623261653333326665613032656635333161326330316665356331
+          3465356639343564360a316334636233623234346432653333616134646133353366666565306238
+          38353339353964363537616265613136353231636438616232306531666434316465643365346633
+          3965376564386337383535373563383330393363303830383834
+
+every_5_minutes_cronjobs:
+  - name: Wireguard status check
+    job: "bash /home/ubuntu/scripts/wireguard_sysctl_status_recover.sh 2> /tmp/crontab_script_log.txt 2>&1 && curl -fsS -m 10 --retry 5 -o /dev/null https://health.ahlooii.com/ping/{{ healthcheckio_wireguard_revive_webhook }}"
+
+reboot_cronjobs:
+  - name: Create necessary iptables during reboot
+    job: bash /home/ubuntu/scripts/iptables.sh
+
+daily_cronjobs:
+  - name: Jobs to prevent oracle shutdown idle instance
+    job: bash /home/ubuntu/scripts/oracle_idle.sh
+
+## SCRIPT DISTRIBUTION roles/distribution
+script_distribution:
+  - src: "files/scripts/oracle-arm/"
+    dest: "/home/ubuntu/scripts"

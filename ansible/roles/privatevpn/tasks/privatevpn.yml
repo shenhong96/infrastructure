@@ -12,7 +12,7 @@
 
 - name: Install PrivateVPN compose file
   template:
-    src: files/PrivateVPN/docker-compose.yml
+    src: files/PrivateVPN/docker-compose.yml.j2
     dest: /{{ docker_user.name }}/docker-compose.yml
     mode: "{{ docker_compose_file_mask }}"
     owner: "{{ docker_user.name }}"
@@ -20,13 +20,13 @@
   register: compose_file
   become: true
 
-- name: trigger PrivateVPN compose command
+- name: Trigger PrivateVPN compose command
   shell:
     chdir: /{{ docker_user.name }}
     cmd: "{{ docker_update_command }}"
   when: compose_file.changed
 
-- name: restart PrivateVPN stack in correct order
+- name: Restart PrivateVPN stack in correct order
   shell:
     chdir: /{{ docker_user.name }}/scripts
     cmd: bash update_restart.sh restart

@@ -1,0 +1,25 @@
+---
+x-monitoring: &loki
+  labels:
+    logging: "promtail"
+    logging_jobname: "containerlogs"
+
+version: "3"
+services:
+  adguardhome:
+    image: adguard/adguardhome:v0.108.0-b.34
+    container_name: adguard
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 784:784/udp
+      - 853:853/tcp
+      - 3000:3000/tcp
+      - 180:80/tcp
+      - 1443:443/tcp
+    volumes:
+      - ./workdir:/opt/adguardhome/work
+      - ./confdir:/opt/adguardhome/conf
+      - /opt/traefik/certs/ahlooii.com:/data
+    restart: always
+    <<: *loki

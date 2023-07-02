@@ -1,0 +1,35 @@
+variables:
+  ANSIBLE_FORCE_COLOR: "true"
+  PY_COLORS: "1"
+  DEPLOY: 
+    value: ""
+    description: "Deploy target. Currently support distribution, portainer, proxmox, proxy, privatevpn, bootstrap, elk"
+  PLAYBOOK: "compose_update.yml ssh-setup.yml vimrc.yml distribution.yml elk.yml"
+
+.default_rules:
+  rules: 
+    if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+
+#lint-job:
+#  image: pipelinecomponents/ansible-lint
+#  script:
+#    - echo "Linting code..."
+#    - echo $PLAYBOOK
+#    - cd $CI_PROJECT_DIR/ansible && ansible-lint -p -x 'internal-error' $PLAYBOOK
+
+.get_ansible_vault:
+  before_script:
+    - export BW_CLIENTID=$BW_CLIENT_ID
+    - export BW_CLIENTSECRET=$BW_SECRET
+    - bw login --apikey
+    - eval $(ssh-agent -s) || echo "You need to install openssh"
+    - echo "$ANS_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - export BW=$BW_PASSWORD
+    - export BW_SESSION=$(bw unlock --raw --passwordenv BW)
+    - chmod -R 700 $CI_PROJECT_DIR
+
+.ansible_playbook:
+  script:
+    - cd $CI_PROJECT_DIR/ansible && ansible-playbook $COMPOSE_FILE --limit $HOST

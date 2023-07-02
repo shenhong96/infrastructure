@@ -1,32 +1,19 @@
 ---
-version: "2.1"
-
 x-lsio: &lsio
   environment:
     - PUID=1000
     - PGID=1000
     - TZ=Asia/Kuala_Lumpur
+x-monitoring: &loki
+  labels:
+    logging: "promtail"
+    logging_jobname: "containerlogs"
 
+version: "2.1"
 services:
-  adguardhome:
-    image: adguard/adguardhome:{{ adguard_ver }}
-    container_name: adguard-home2
-    ports:
-      - 53:53/tcp
-      - 53:53/udp
-      - 784:784/udp
-      - 853:853/tcp
-      - 3000:3000/tcp
-      - 180:80/tcp
-      - 1443:443/tcp
-    volumes:
-      - ./adguard/workdir:/opt/adguardhome/work
-      - ./adguard/confdir:/opt/adguardhome/conf
-    restart: always
-    
   homer:
     container_name: homer
-    image: b4bz/homer:latest
+    image: b4bz/homer
     environment:
       - INIT_ASSETS=0
     ports:
@@ -71,20 +58,21 @@ services:
     volumes:
       - './uptime-kuma:/app/data'
     restart: always
+    <<: *loki
 
   smokeping:
-    image: lscr.io/linuxserver/smokeping
+    image: lscr.io/linuxserver/smokeping:latest
     container_name: smokeping
-    <<: *lsio
     volumes:
       - ./smokeping/config:/config
       - ./smokeping/data:/data
     ports:
       - 81:80
     restart: unless-stopped
+    <<: *loki
 
   firefox:
-    image: lscr.io/linuxserver/firefox
+    image: lscr.io/linuxserver/firefox:latest
     container_name: firefox
     environment:
       - PUID=1000
@@ -97,13 +85,13 @@ services:
       - 3309:3000
     shm_size: "2gb"
     restart: unless-stopped
+    <<: *loki
 
   webtop:
     image: lscr.io/linuxserver/webtop:ubuntu-mate
     container_name: webtop
     security_opt:
       - seccomp:unconfined #optional
-    <<: *lsio
     volumes:
       - ./webtop:/config
       - /var/run/docker.sock:/var/run/docker.sock #optional
@@ -111,6 +99,7 @@ services:
       - 1596:3000
     shm_size: "4gb" #optional
     restart: unless-stopped
+    <<: *loki
 
   healthchecks:
     image: lscr.io/linuxserver/healthchecks:latest
@@ -118,26 +107,62 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - SITE_ROOT=https://healthcheck.{{ domain_name }}:8078
+      - SITE_ROOT=https://health.{{ domain_name }}
       - SITE_NAME=Homelab Health Check For Crontab
-      #- DEFAULT_FROM_EMAIL=<DEFAULT_FROM_EMAIL>
-      #- EMAIL_HOST=<EMAIL_HOST>
-      #- EMAIL_PORT=<EMAIL_PORT>
-      #- EMAIL_HOST_USER=<EMAIL_HOST_USER>
-      #- EMAIL_HOST_PASSWORD=<EMAIL_HOST_PASSWORD>
-      #- EMAIL_USE_TLS=<True or False>
-      #- SUPERUSER_EMAIL=<SUPERUSER_EMAIL>
-      #- SUPERUSER_PASSWORD=<SUPERUSER_PASSWORD>
-      #- REGENERATE_SETTINGS=True/False #optional
-      #- SITE_LOGO_URL=<SITE_LOGO_URL> #optional
-      - ALLOWED_HOSTS=["healthcheck.{{ domain_name }}","192.168.9.151"] #optional
-      #- SECRET_KEY=<SECRET_KEY> #optional
-      #- APPRISE_ENABLED=True/False #optional
+      - DEFAULT_FROM_EMAIL={{ HC_DEFAULT_EMAIL }}
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - EMAIL_HOST_USER={{ HC_DEFAULT_EMAIL }}
+      - EMAIL_HOST_PASSWORD={{ HC_DEFAULT_EMAIL_PASS }}
+      - EMAIL_USE_TLS=True
+      - SUPERUSER_EMAIL={{ HC_SUPERUSER }}
+      - SUPERUSER_PASSWORD={{ HC_SUPERUSER_PASS }}
+      - REGENERATE_SETTINGS=False #optional
+      - SITE_LOGO_URL=https://www.svgrepo.com/show/120975/alarm.svg
+      - ALLOWED_HOSTS=["health.{{ domain_name }}","192.168.9.151"] #optional
+      - SECRET_KEY={{ HC_SECRET_KEY }} #optional
+      - APPRISE_ENABLED=True
     volumes:
       - ./healthcheck:/config
     ports:
       - 8078:8000
-    restart: unless-stopped
+    restart: always
+    <<: *loki
+
+  gotify:
+    image: gotify/server
+    container_name: gotify
+    ports:
+      - 8087:80
+    environment:
+      - GOTIFY_DEFAULTUSER_PASS=custom
+    volumes:
+      - "./gotify:/app/data"
+    restart: always
+    <<: *loki
+
+  olivetin:
+    image: jamesread/olivetin:{{ olivetin_ver }}
+    container_name: olivetin
+    volumes:
+      - ./olivetin:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "1337:1337"
+    restart: always
+
+############### AUDIOBOOKSHELF ##################
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf
+    container_name: audiobookshelf
+    ports:
+      - 13378:80
+    volumes:
+      - /mnt/books:/books
+      - ./metadata:/metadata
+      - ./config:/config
+    restart: always
+    <<: *loki
 
 #################### PORTAINER #####################
   portainer-ce:
@@ -153,6 +178,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./portainer:/data
+    <<: *loki
 
 ################# SPEEDTEST GRAFANA STACK ##################
   grafana:
@@ -170,7 +196,6 @@ services:
       - influxdb
 
   speedtest:
-    restart: always
     image: frdmn/speedtest-grafana:latest
     container_name: speedtest
     environment:
@@ -178,6 +203,8 @@ services:
       - "SPEEDTEST_HOST=local"
     depends_on:
       - influxdb
+    restart: always
+    <<: *loki
 
   influxdb:
     restart: always
@@ -192,27 +219,25 @@ services:
       - "INFLUXDB_DB=speedtest"
 
 
-
 ############# WALLABAG STACK #################
-
   wallabag:
     image: wallabag/wallabag:{{ wallabag_ver }}
     restart: unless-stopped
     container_name: wallabag
     environment:
-      - MYSQL_ROOT_PASSWORD="{{ WALLABAG_MYSQL_ROOT_PASSWORD }}"
+      - MYSQL_ROOT_PASSWORD={{ WALLABAG_MYSQL_ROOT_PASSWORD }}
       - SYMFONY__ENV__DATABASE_DRIVER=pdo_mysql
-      - SYMFONY__ENV__DATABASE_HOST=db
+      - SYMFONY__ENV__DATABASE_HOST=wallabag-db
       - SYMFONY__ENV__DATABASE_PORT=3306
-      - SYMFONY__ENV__DATABASE_NAME="{{ WALLABAG_DB_NAME }}"
-      - SYMFONY__ENV__DATABASE_USER="{{ WALLABAG_DB_USER }}"
-      - SYMFONY__ENV__DATABASE_PASSWORD="{{ WALLABAG_DB_PASS }}"
+      - SYMFONY__ENV__DATABASE_NAME={{ WALLABAG_DB_NAME }}
+      - SYMFONY__ENV__DATABASE_USER={{ WALLABAG_DB_USER }}
+      - SYMFONY__ENV__DATABASE_PASSWORD={{ WALLABAG_DB_PASS }}
       - SYMFONY__ENV__DATABASE_CHARSET=utf8mb4
-      - SYMFONY__ENV__MAILER_HOST=127.0.0.1
-      - SYMFONY__ENV__MAILER_USER=~
-      - SYMFONY__ENV__MAILER_PASSWORD=~
+      - SYMFONY__ENV__MAILER_HOST=smtp.gmail.com
+      - SYMFONY__ENV__MAILER_USER={{ HC_DEFAULT_EMAIL }}
+      - SYMFONY__ENV__MAILER_PASSWORD={{ HC_DEFAULT_EMAIL_PASS }}
       - SYMFONY__ENV__FROM_EMAIL=wallabag@example.com
-      - SYMFONY__ENV__DOMAIN_NAME=https://wallabag."{{ domain_name }}"
+      - SYMFONY__ENV__DOMAIN_NAME=https://wallabag.{{ domain_name }}
       - SYMFONY__ENV__SERVER_NAME="Your wallabag instance"
     ports:
       - "8765:80"
@@ -224,37 +249,40 @@ services:
       timeout: 3s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallabag-secure.entrypoints=https"
+      - "traefik.http.routers.wallabag-secure.entrypoints=web-secure"
       - "traefik.http.routers.wallabag-secure.rule=Host(`wallabag.{{ domain_name }}`)"
       - "traefik.http.routers.wallabag-secure.tls=true"
       - "traefik.http.routers.wallabag-secure.service=wallabag"
       - "traefik.http.services.wallabag.loadbalancer.server.port=8765"
       - "traefik.docker.network=proxy"
     depends_on:
-      - db
-      - redis
+      - wallabag-db
+      - wallabag-redis
+    <<: *loki
 
-  db:
+  wallabag-db:
     image: mariadb
     restart: unless-stopped
-    container_name: wallabagDB
+    container_name: wallabag_db
     environment:
-      - MYSQL_ROOT_PASSWORD="{{ WALLABAG_DB_ROOT_PASS }}"
+      - MYSQL_ROOT_PASSWORD={{ WALLABAG_DB_ROOT_PASS }}
     volumes:
       - /mnt/ssd/wallabag/db:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 20s
       timeout: 3s
+    <<: *loki
 
-  redis:
+  wallabag-redis:
     image: redis:alpine
     restart: unless-stopped
-    container_name: wallabagRedis
+    container_name: wallabag_redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 20s
       timeout: 3s
+    <<: *loki
 
 ################# SYNCTHING ##################
   syncthing:
@@ -263,7 +291,6 @@ services:
     hostname: syncthing #optional
     networks:
       - traefik
-    <<: *lsio
     volumes:
       - ./syncthing/config:/config
       - /mnt/syncthing/Mate-20:/mnt/mate20
@@ -275,16 +302,61 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.syncthing.entrypoints=https"
+      - "traefik.http.routers.syncthing.entrypoints=web-secure"
       - "traefik.http.routers.syncthing.rule=Host(`syncthing.{{ domain_name }}`)"
       - "traefik.http.middlewares.syncthing-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.syncthing.middlewares=syncthing-https-redirect"
-      - "traefik.http.routers.syncthing-secure.entrypoints=https"
+      - "traefik.http.routers.syncthing-secure.entrypoints=web-secure"
       - "traefik.http.routers.syncthing-secure.rule=Host(`syncthing.{{ domain_name }}`)"
       - "traefik.http.routers.syncthing-secure.tls=true"
       - "traefik.http.routers.syncthing-secure.service=syncthing"
       - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
       - "traefik.docker.network=traefik"
+    <<: *loki
+    
+################# PHOTOVIEW ##################
+  photoview-db:
+    image: mariadb:10.5
+    container_name: photoview-db
+    restart: always
+    environment:
+      - MYSQL_DATABASE={{ PHOTOVIEW_DB_NAME }}
+      - MYSQL_USER={{ PHOTOVIEW_DB_USER }}
+      - MYSQL_PASSWORD={{ PHOTOVIEW_DB_PASS }}
+      - MYSQL_RANDOM_ROOT_PASSWORD={{ PHOTOVIEW_DB_ROOT_PASS }}
+    volumes:
+      - ./photoview/db_data:/var/lib/mysql
+
+  photoview:
+    image: viktorstrate/photoview:{{ photoview_ver }}
+    container_name: photoview
+    restart: always
+    ports:
+      - "8009:80"
+    depends_on:
+      - photoview-db
+    environment:
+      - PHOTOVIEW_DATABASE_DRIVER=mysql
+      - PHOTOVIEW_MYSQL_URL=photoview:{{ PHOTOVIEW_DB_PASS }}@tcp(photoview-db)/photoview
+      - PHOTOVIEW_LISTEN_IP=photoview
+      - PHOTOVIEW_LISTEN_PORT=80
+      - PHOTOVIEW_MEDIA_CACHE=/app/cache
+      # Optional: If you are using Samba/CIFS-Share and experience problems with "directory not found"
+      # Enable the following Godebug
+      # - GODEBUG=asyncpreemptoff=1
+      # Optional: To enable map related features, you need to create a mapbox token.
+      # A token can be generated for free here https://account.mapbox.com/access-tokens/
+      # It's a good idea to limit the scope of the token to your own domain, to prevent others from using it.
+      # - MAPBOX_TOKEN=<YOUR TOKEN HERE>
+
+    volumes:
+      - ./photoview/api_cache:/app/cache
+      # Change This: to the directory where your photos are located on your server.
+      # If the photos are located at `/home/user/photos`, then change this value
+      # to the following: `/home/user/photos:/photos:ro`.
+      # You can mount multiple paths, if your photos are spread across multiple directories.
+      - /mnt/photos:/photos:ro
+
 
 networks:
   traefik:

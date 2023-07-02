@@ -1,11 +1,8 @@
 ---
-- name: Install the components
+# tasks file for flask_web
+- name: Install vim
   apt:
-    name: 
-      - tmux
-      - vim
-      - git
-      - xclip
+    name: vim
     state: present
 
 - name: Create directory
@@ -14,17 +11,10 @@
     state: directory
   become: true
 
-- name: git clone dracula theme vim
+- name: git clone dracula theme
   git:
     repo: https://github.com/dracula/vim.git
     dest: ~/.vim/pack/themes/start/dracula
-    clone: yes
-    version: master
-
-- name: git clone tmux plugins manager
-  git:
-    repo: https://github.com/tmux-plugins/tpm
-    dest: ~/.tmux/plugins/tpm
     clone: yes
     version: master
 
@@ -32,8 +22,3 @@
   copy:
     src: files/vimrc
     dest: /root/.vimrc
-
-- name: Copy tmux config files
-  copy:
-    src: files/tmux.conf
-    dest: /root/.tmux.conf

@@ -1,0 +1,13 @@
+# Path related
+docker_compose_path: /opt
+loki_config_dir: ./loki
+loki_log_storage: /mnt/storage/appdata/monitoring/loki
+promtail_config_dir: ./promtail
+
+
+# Application related
+loki_version: 2.8.0
+promtail_version: 2.8.0
+loki_http_port: 3100
+loki_grpc_port: 9095
+promtail_http_port: 9080

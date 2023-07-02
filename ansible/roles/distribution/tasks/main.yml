@@ -1,64 +1,10 @@
----
 # tasks file for distribution scripting to VM
-    - name: Script Distribution for Proxmox
-      when: inventory_hostname == 'ProxmoxMaster'
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "/root/scripts"
-        owner: "root"
-        mode: 0600
-      with_fileglob:
-        - "../../../scripts/proxmox/*"
-
-    - name: Script Distribution for PrivateVPN
-      when: inventory_hostname == 'PrivateVPN'
-      become: true
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "/root/scripts"
-        owner: "root"
-        mode: 0600
-      with_fileglob:
-        - "../../../scripts/privatevpn/*"
-
-    - name: Script Distribution for Oracle Arm Instance
-      when: inventory_hostname == 'Oracle-Arm'
-      become: true
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "/home/ubuntu/scripts"
-        owner: "root"
-        mode: 0600
-      with_fileglob:
-        - "../../../scripts/oracle-arm/*"
-
-    - name: Script Distribution for BabyThanos
-      when: inventory_hostname == 'Baby-Thanos'
-      become: true
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "/home/hp-hp/scripts"
-        owner: "root"
-        mode: 0600
-      with_fileglob:
-        - "../../../scripts/oracle-arm/*"
-
-    - name: Script Distribution for Proxmox LXC
-      when: ('proxmox' in group_names and inventory_hostname != 'ProxmoxMaster')
-      become: true
-      ansible.builtin.copy:
-        src: "{{ item }}"
-        dest: "/root/scripts/"
-        owner: "root"
-        mode: 0600
-      with_fileglob:
-        - "../../../scripts/proxmox/sysctl_status_recover.sh"
-
-    - name: Smb Conf for File-Server
-      when: inventory_hostname == 'File-Server'
-      become: true
-      ansible.builtin.copy:
-        src: files/smb.conf
-        dest: "/etc/samba/smb.conf"
-        owner: "root"
-        mode: 0640
+- name: Script Distribution
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default('root') }}"
+    mode: "{{ item.mode | default('0600') }}"
+  with_items: "{{ script_distribution }}" # this is the list of scripts for each host
+  when: script_distribution is defined # this condition ensures that the task only runs if the host_vars have this list defined

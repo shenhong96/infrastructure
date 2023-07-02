@@ -17,18 +17,27 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 #  variables:
 #    CI_DEBUG_TRACE: "true"
+#cache:
+#  key: .docker
+#  paths:
+#    - /var/lib/docker
+
 include:
   - local: '.gitlab-ci/variables.yml'
-  - local: '.gitlab-ci/job-distribution.yml'
   - local: '.gitlab-ci/job-mastery.yml'
   - local: '.gitlab-ci/job-proxmoxMaster.yml'
   - local: '.gitlab-ci/job-reverseProxy.yml'
   - local: '.gitlab-ci/job-privatevpn.yml'
   - local: '.gitlab-ci/job-bootstrap.yml'
   - local: '.gitlab-ci/job-elk.yml'
+  - local: '.gitlab-ci/job-all.yml'
+
+image:
+  name: ahlooii/cicd
+  pull_policy: if-not-present
 
 stages:          # List of stages for jobs, and their order of execution
-  - test
+#  - test
   - deploy
 
 

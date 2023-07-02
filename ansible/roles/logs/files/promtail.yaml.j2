@@ -1,0 +1,55 @@
+# Template for promtail-config.yaml.j2
+
+server:
+  http_listen_port: {{ promtail_http_port }}
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://{{ 'loki' if loki_master else proxmox_host_ip }}:{{ loki_http_port }}/loki/api/v1/push
+
+scrape_configs:
+{% if enable_promtail_system | default(true) %}
+- job_name: system
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: varlogs
+      __path__: /var/log/*log
+      host: {{ ansible_hostname }}
+{% endif %}
+
+{% if enable_promtail_docker | default(true) %}
+- job_name: flog_scrape
+  docker_sd_configs:
+    - host: unix:///var/run/docker.sock
+      refresh_interval: 5s
+      filters:
+        - name: label
+          values: ["logging=promtail"]
+  relabel_configs:
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/(.*)'
+      target_label: 'container'
+    - source_labels: ['__meta_docker_container_log_stream']
+      target_label: 'logstream'
+    - source_labels: ['__meta_docker_container_label_logging_jobname']
+      target_label: 'job'
+{% endif %}
+
+{% if enable_promtail_syslog %}
+# Add this section to scrape syslog logs
+- job_name: syslog
+  syslog:
+    listen_address: 0.0.0.0:1514 # make sure you also expose this port on the container
+    idle_timeout: 60s
+    label_structured_data: yes
+    labels:
+      job: "syslog"
+  relabel_configs:
+    - source_labels: ['__syslog_message_hostname']
+      target_label: 'host'
+{% endif %}
