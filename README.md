@@ -2,7 +2,7 @@
 Home-lab infrastructure repo to keep tracks of my existing infra state. 
 This is a project that automates the deployment and configuration of various services using Ansible and Docker. The services include:
 
-Note: This repo is merely a git backup for codes that coming from gitlab instance that self-hosting in homelab.
+Note: This repo is merely a git backup for codes that coming from gitlab instance that self-hosted in homelab.
 
 ## Table of Contents
 
