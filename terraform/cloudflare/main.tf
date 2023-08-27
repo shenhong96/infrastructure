@@ -1,10 +1,14 @@
-resource "cloudflare_zone" "this" {
-  paused = false
-  plan   = "free"
-  type   = "full"
-  zone   = var.zone
-  account_id = var.account_id
-}
+# data "cloudflare_zone" "this" {
+#   name = var.zone
+# }
+
+# resource "cloudflare_zone" "this" {
+#   paused = false
+#   plan   = "free"
+#   type   = "full"
+#   zone   = var.zone
+#   account_id = var.account_id
+# }
 
 # resource "cloudflare_origin_ca_certificate" "this" {
 #   hostnames          = ["*.${var.zone}", var.zone]
@@ -25,7 +29,7 @@ resource "cloudflare_ruleset" "geoblock" {
   kind    = "zone"
   name    = "default"
   phase   = "http_request_firewall_custom"
-  zone_id = cloudflare_zone.this.id
+  zone_id = var.zone_id
   rules {
     action      = "block"
     description = "Block Non-MY or SG IP"
@@ -38,7 +42,7 @@ module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
   version = "2.0.1"
 
-  zone_id = var.zone
+  zone_id = var.zone_id
   default_ttl = 300
 
   map_of_records = {
