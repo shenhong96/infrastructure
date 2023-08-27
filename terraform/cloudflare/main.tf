@@ -3,6 +3,7 @@ resource "cloudflare_zone" "this" {
   plan   = "free"
   type   = "full"
   zone   = var.zone
+  account_id = var.account_id
 }
 
 # resource "cloudflare_origin_ca_certificate" "this" {
