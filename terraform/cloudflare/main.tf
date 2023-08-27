@@ -56,8 +56,8 @@ locals {
 # }
 
 resource "cloudflare_record" "debug" {
-  name      = syncthing2
-  value     = google.com
+  name      = "syncthing2"
+  value     = "google.com"
   type      = "CNAME"
   zone_id   = var.zone
   ttl       = 1
