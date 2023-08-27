@@ -13,10 +13,10 @@ variable "zone" {
   type        = string
 }
 
-variable "zone_id" {
-  description = "The zone where resources will be created"
-  type        = string
-}
+# variable "zone_id" {
+#   description = "The zone where resources will be created"
+#   type        = string
+# }
 
 variable "allowed_countries" {
   description = "Country that'll be excluded in the Geoblock Filters"
