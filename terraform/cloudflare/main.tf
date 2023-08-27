@@ -17,21 +17,21 @@ locals {
   # countries will be ["ip.geoip.country ne \"MY\"", "ip.geoip.country ne \"SG\""]
   countries = [for c in var.allowed_countries : "ip.geoip.country ne \"${c}\""]
   # Eg, "ip.geoip.country ne \"MY\" and ip.geoip.country ne \"SG\""
+  # https://developers.cloudflare.com/ruleset-engine/rules-language/
   geoblock_whitelist  = join(" and ", local.countries)
 }
 
-resource "cloudflare_filter" "geoblock" {
-  expression = local.geoblock_whitelist
-  paused     = false
-  zone_id    = cloudflare_zone.this.id
-}
-
-resource "cloudflare_firewall_rule" "geoblock" {
-  action      = "block"
-  description = "Block Non-MY or SG IP"
-  filter_id   = cloudflare_filter.geoblock.id
-  paused      = false
-  zone_id     = cloudflare_zone.this.id
+resource "cloudflare_ruleset" "geoblock" {
+  kind    = "zone"
+  name    = "default"
+  phase   = "http_request_firewall_custom"
+  zone_id = cloudflare_zone.this.id
+  rules {
+    action      = "block"
+    description = "Block Non-MY or SG IP"
+    enabled     = true
+    expression  = local.geoblock_whitelist 
+  }
 }
 
 module "dns" {
