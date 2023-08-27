@@ -29,7 +29,7 @@ resource "cloudflare_ruleset" "geoblock" {
   kind    = "zone"
   name    = "default"
   phase   = "http_request_firewall_custom"
-  zone_id = var.zone_id
+  zone_id = var.zone
   rules {
     action      = "block"
     description = "Block Non-MY or SG IP"
@@ -42,7 +42,7 @@ module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
   version = "2.0.1"
 
-  zone_id = var.zone_id
+  zone_id = var.zone
   default_ttl = 300
 
   map_of_records = {
