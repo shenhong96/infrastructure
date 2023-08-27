@@ -59,7 +59,7 @@ resource "cloudflare_record" "debug" {
   name      = "syncthing2"
   value     = "google.com"
   type      = "CNAME"
-  zone_id   = var.zone
+  zone_id   = "example.com"
   ttl       = 1
   proxied   = true
 }
