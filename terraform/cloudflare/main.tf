@@ -36,7 +36,7 @@ resource "cloudflare_firewall_rule" "geoblock" {
 
 module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
-  version = "2.0.0"
+  version = "2.0.1"
 
   zone_id = var.zone
   default_ttl = 300
