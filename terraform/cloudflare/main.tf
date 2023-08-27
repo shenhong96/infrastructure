@@ -5,10 +5,10 @@ resource "cloudflare_zone" "this" {
   zone   = var.zone
 }
 
-resource "cloudflare_origin_ca_certificate" "this" {
-  hostnames          = ["*.${var.zone}", var.zone]
-  requested_validity = 0
-}
+# resource "cloudflare_origin_ca_certificate" "this" {
+#   hostnames          = ["*.${var.zone}", var.zone]
+#   requested_validity = 0
+# }
 
 # Locals block to handle dynamic Cloudflare expression creation
 locals {
