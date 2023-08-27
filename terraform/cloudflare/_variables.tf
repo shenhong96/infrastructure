@@ -8,3 +8,8 @@ variable "zone" {
   type        = string
 }
 
+variable "allowed_countries" {
+  description = "Country that'll be excluded in the Geoblock Filters"
+  type        = list(string)
+  default     = ["MY", "SG"]
+}
