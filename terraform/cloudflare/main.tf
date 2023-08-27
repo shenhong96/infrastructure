@@ -38,19 +38,28 @@ locals {
 #   }
 # }
 
-module "dns" {
-  source  = "app.terraform.io/ahlooii/dns/cloudflare"
-  version = "2.0.1"
+# module "dns" {
+#   source  = "app.terraform.io/ahlooii/dns/cloudflare"
+#   version = "2.0.1"
 
-  zone_id = var.zone
-  default_ttl = 300
+#   zone_id = var.zone
+#   default_ttl = 300
 
-  map_of_records = {
-    "${var.zone}" = [
-      {
-        name    = "syncthing"
-        proxied = true
-      }
-    ]
-  }
+#   map_of_records = {
+#     "${var.zone}" = [
+#       {
+#         name    = "syncthing"
+#         proxied = true
+#       }
+#     ]
+#   }
+# }
+
+resource "cloudflare_record" "debug" {
+  name      = syncthing2
+  value     = google.com
+  type      = "CNAME"
+  zone_id   = var.zone
+  ttl       = 1
+  proxied   = true
 }
