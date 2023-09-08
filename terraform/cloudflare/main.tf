@@ -58,6 +58,18 @@ module "dns" {
       {
         name = "librespeed"
         proxied = true
+      },
+      {
+        name = "wireguard"
+        proxied = true
+      },
+      {
+        name = "syncthing"
+        proxied = true
+      },
+      {
+        name = "nextcloud"
+        proxied = true
       }
     ]
   }
