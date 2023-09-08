@@ -23,3 +23,8 @@ variable "allowed_countries" {
   type        = list(string)
   default     = ["MY", "SG"]
 }
+
+variable "email_routing" {
+  description = "Email routing address"
+  type = string
+}

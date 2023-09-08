@@ -40,7 +40,7 @@ locals {
 
 module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
-  version = "2.0.1"
+  version = "2.0.2"
 
   zone_id = var.zone_id
   default_ttl = 300
@@ -70,6 +70,16 @@ module "dns" {
       {
         name = "nextcloud"
         proxied = true
+      }
+    ],
+    "${var.email_routing}" = [
+      {
+        name = "mail"
+        proxied = false
+      },
+      {
+        name = "webmail"
+        proxied = false
       }
     ]
   }
