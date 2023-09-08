@@ -48,7 +48,15 @@ module "dns" {
   map_of_records = {
     "${var.zone}" = [
       {
-        name    = "syncthing2"
+        name    = "jellyfin"
+        proxied = true
+      },
+      {
+        name = "auth"
+        proxied = true
+      },
+      {
+        name = "librespeed"
         proxied = true
       }
     ]
