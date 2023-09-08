@@ -42,7 +42,7 @@ module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
   version = "2.0.1"
 
-  zone_id = var.zone
+  zone_id = var.zone_id
   default_ttl = 300
 
   map_of_records = {
