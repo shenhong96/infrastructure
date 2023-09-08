@@ -22,7 +22,7 @@ locals {
   countries = [for c in var.allowed_countries : "ip.geoip.country ne \"${c}\""]
   # Eg, "ip.geoip.country ne \"MY\" and ip.geoip.country ne \"SG\""
   # https://developers.cloudflare.com/ruleset-engine/rules-language/
-  geoblock_whitelist  = join(" and ", local.countries)
+  geoblock_whitelist = join(" and ", local.countries)
 }
 
 # resource "cloudflare_ruleset" "geoblock" {
@@ -42,7 +42,7 @@ module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
   version = "2.0.3"
 
-  zone_id = var.zone_id
+  zone_id     = var.zone_id
   default_ttl = 300
 
   map_of_records = {
@@ -52,34 +52,62 @@ module "dns" {
         proxied = true
       },
       {
-        name = "auth"
+        name    = "auth"
         proxied = true
       },
       {
-        name = "librespeed"
+        name    = "librespeed"
         proxied = true
       },
       {
-        name = "wireguard"
+        name    = "wireguard"
         proxied = true
       },
       {
-        name = "syncthing"
+        name    = "syncthing"
         proxied = true
       },
       {
-        name = "nextcloud"
+        name    = "nextcloud"
         proxied = true
       }
     ],
-    "${var.email_routing}" = [
+    "${var.email_route}" = [
       {
-        name = "mail"
+        name    = "mail"
         proxied = false
       },
       {
-        name = "webmail"
+        name    = "webmail"
         proxied = false
+      },
+      {
+        name     = var.zone
+        proxied  = false
+        priority = 10
+        type     = "MX"
+      }
+    ],
+    "${var.email_relay_route}" = [
+      {
+        name     = var.zone
+        proxied  = false
+        priority = 20
+        type     = "MX"
+      }
+    ],
+    "${var.spf_record}" = [
+      {
+        name    = var.zone
+        proxied = false
+        type    = "TXT"
+      }
+    ],
+    "${var.dkim_record}" = [
+      {
+        name    = "x._domainkey"
+        proxied = false
+        type    = "TXT"
       }
     ]
   }

@@ -24,7 +24,22 @@ variable "allowed_countries" {
   default     = ["MY", "SG"]
 }
 
-variable "email_routing" {
+variable "email_route" {
   description = "Email routing address"
-  type = string
+  type        = string
+}
+
+variable "email_relay_route" {
+  description = "Email relay routing address"
+  type        = string
+}
+
+variable "spf_record" {
+  description = "SPF Record"
+  type        = string
+}
+
+variable "dkim_record" {
+  description = "DKIM Record"
+  type        = string
 }
