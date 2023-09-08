@@ -40,7 +40,7 @@ locals {
 
 module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
-  version = "2.0.2"
+  version = "2.0.3"
 
   zone_id = var.zone_id
   default_ttl = 300
