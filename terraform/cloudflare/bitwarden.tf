@@ -15,8 +15,9 @@ resource "null_resource" "install_bw_cli" {
 
 data "bitwarden_item_login" "secret" {
     id = "c90a764c-a2a1-4705-bce8-b078009b7e2b"
+    depends_on = [ null_resource.install_bw_cli ]
 }
 
-output bitwarden {
-    value = data.bitwarden_item_login.secret.*
-}
+# output bitwarden {
+#     value = data.bitwarden_item_login.secret.*
+# }
