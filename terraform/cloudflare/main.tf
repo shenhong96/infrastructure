@@ -22,21 +22,21 @@ locals {
   countries = [for c in var.allowed_countries : "ip.geoip.country ne \"${c}\""]
   # Eg, "ip.geoip.country ne \"MY\" and ip.geoip.country ne \"SG\""
   # https://developers.cloudflare.com/ruleset-engine/rules-language/
-  geoblock_whitelist = join(" and ", local.countries)
+  geoblock_whitelist = "(${join(" and ", local.countries)})"
 }
 
-# resource "cloudflare_ruleset" "geoblock" {
-#   kind    = "zone"
-#   name    = "default"
-#   phase   = "http_request_firewall_custom"
-#   zone_id = var.zone
-#   rules {
-#     action      = "block"
-#     description = "Block Non-MY or SG IP"
-#     enabled     = true
-#     expression  = local.geoblock_whitelist 
-#   }
-# }
+resource "cloudflare_ruleset" "geoblock" {
+  kind    = "zone"
+  name    = "default"
+  phase   = "http_request_firewall_custom"
+  zone_id = var.zone_id
+  rules {
+    action      = "block"
+    description = "Blocking countries that are not in the whitelist."
+    enabled     = true
+    expression  = local.geoblock_whitelist 
+  }
+}
 
 module "dns" {
   source  = "app.terraform.io/ahlooii/dns/cloudflare"
