@@ -1,20 +1,3 @@
-# data "cloudflare_zone" "this" {
-#   name = var.zone
-# }
-
-# resource "cloudflare_zone" "this" {
-#   paused = false
-#   plan   = "free"
-#   type   = "full"
-#   zone   = var.zone
-#   account_id = var.account_id
-# }
-
-# resource "cloudflare_origin_ca_certificate" "this" {
-#   hostnames          = ["*.${var.zone}", var.zone]
-#   requested_validity = 0
-# }
-
 # Locals block to handle dynamic Cloudflare expression creation
 locals {
   # If allowed_countries = ["MY", "SG"], 
@@ -126,3 +109,22 @@ module "dns" {
     ]
   }
 }
+
+# resource "cloudflare_access_application" "kasm" {
+#   app_launcher_visible       = true
+#   auto_redirect_to_identity  = false
+#   domain                     = "kasm.${var.zone}"
+#   enable_binding_cookie      = false
+#   http_only_cookie_attribute = true
+#   name                       = "kasm"
+#   self_hosted_domains        = ["kasm.${var.zone}"]
+#   session_duration           = "24h"
+#   skip_interstitial          = true
+#   type                       = "self_hosted"
+#   zone_id                    = var.zone_id
+#   cors_headers {
+#     allow_all_headers = true
+#     allow_all_methods = true
+#     allow_all_origins = true
+#   }
+# }
