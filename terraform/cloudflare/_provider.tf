@@ -24,4 +24,5 @@ provider "cloudflare" {
 
 provider "bitwarden" {
   server = "https://vault.bitwarden.com"
+  depends_on = [ null_resource.install_bw_cli ]
 }
