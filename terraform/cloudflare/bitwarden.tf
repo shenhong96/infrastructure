@@ -4,10 +4,10 @@ resource "null_resource" "example" {
   }
 }
 
-# data "bitwarden_item_login" "secret" {
-#     id = "c90a764c-a2a1-4705-bce8-b078009b7e2b"
-# }
+data "bitwarden_item_login" "secret" {
+    id = "c90a764c-a2a1-4705-bce8-b078009b7e2b"
+}
 
-# output bitwarden {
-#     value = data.bitwarden_item_login.secret.*
-# }
+output bitwarden {
+    value = data.bitwarden_item_login.secret.*
+}
