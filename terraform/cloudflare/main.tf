@@ -46,7 +46,10 @@ module "dns" {
   default_ttl = 300
 
   map_of_records = {
-
+    "${var.primary}" = [{
+        name    = "@"
+        proxied = true
+    }],
     "${var.zone}" = [
       {
         name    = "jellyfin"
