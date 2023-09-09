@@ -46,6 +46,7 @@ module "dns" {
   default_ttl = 300
 
   map_of_records = {
+
     "${var.zone}" = [
       {
         name    = "jellyfin"
@@ -72,6 +73,7 @@ module "dns" {
         proxied = true
       }
     ],
+
     "${var.email_route}" = [
       {
         name    = "mail"
@@ -88,6 +90,7 @@ module "dns" {
         type     = "MX"
       }
     ],
+
     "${var.email_relay_route}" = [
       {
         name     = var.zone
@@ -108,6 +111,14 @@ module "dns" {
         name    = "x._domainkey"
         proxied = false
         type    = "TXT"
+      }
+    ],
+
+    "${var.oracle_instance}" = [
+      {
+        name    = "*.oracle"
+        proxied = false
+        type    = "A"
       }
     ]
   }

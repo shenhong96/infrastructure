@@ -35,11 +35,16 @@ variable "email_relay_route" {
 }
 
 variable "spf_record" {
-  description = "SPF Record"
+  description = "SPF record"
   type        = string
 }
 
 variable "dkim_record" {
-  description = "DKIM Record"
+  description = "DKIM record"
+  type        = string
+}
+
+variable "oracle_instance" {
+  description = "Oracle instance ip"
   type        = string
 }
