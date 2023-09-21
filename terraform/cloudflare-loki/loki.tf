@@ -5,14 +5,18 @@ resource "random_id" "loki" {
 resource "cloudflare_tunnel" "loki" {
   account_id = var.account_id
   name       = "loki"
-  secret     = random_id.loki.b64_url
+  secret     = random_id.loki.b64_std
 }
 
-resource "cloudflare_tunnel_route" "blog_route" {
+resource "cloudflare_tunnel_route" "loki" {
   account_id         = var.account_id
   tunnel_id          = cloudflare_tunnel.loki.id
   network            = "127.0.0.1/32" # Replace with your VPS's IP.
   comment            = "Tunnel route to Loki"
+}
+
+output "debug_b64" {
+    value = random_id.loki.b64_std
 }
 
 # resource "cloudflare_tunnel_config" "blog_config" {
