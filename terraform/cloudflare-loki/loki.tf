@@ -5,7 +5,7 @@ resource "random_id" "loki" {
 resource "cloudflare_tunnel" "loki" {
   account_id = var.account_id
   name       = "loki"
-  secret     = random_id.loki.id
+  secret     = random_id.loki.b64_url
 }
 
 resource "cloudflare_tunnel_route" "blog_route" {
