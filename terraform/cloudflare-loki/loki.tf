@@ -22,7 +22,7 @@ resource "cloudflare_access_application" "loki" {
   enable_binding_cookie      = false
   http_only_cookie_attribute = true
   name                       = var.zone
-  self_hosted_domains        = var.zone
+  self_hosted_domains        = ["${var.zone}"]
   session_duration           = "24h"
   skip_interstitial          = true
   type                       = "self_hosted"
