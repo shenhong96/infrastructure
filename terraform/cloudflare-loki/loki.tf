@@ -15,6 +15,24 @@ resource "cloudflare_tunnel_route" "loki" {
   comment            = "Tunnel route to Loki"
 }
 
+resource "cloudflare_access_application" "loki" {
+  app_launcher_visible       = true
+  auto_redirect_to_identity  = false
+  domain                     = var.zone
+  enable_binding_cookie      = false
+  http_only_cookie_attribute = true
+  name                       = var.zone
+  self_hosted_domains        = var.zone
+  session_duration           = "24h"
+  skip_interstitial          = true
+  type                       = "self_hosted"
+  zone_id                    = var.zone_id
+  cors_headers {
+    allow_all_headers = true
+    allow_all_methods = true
+    allow_all_origins = true
+  }
+}
 
 # resource "cloudflare_tunnel_config" "blog_config" {
 #   account_id = var.account_id
