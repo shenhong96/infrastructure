@@ -49,10 +49,7 @@ variable "oracle_instance" {
   type        = string
 }
 
-variable "tunnel_id" {
-  description = "Cloudflare Tunnel ID for the Oracle instance"
-  type        = string
-}
+
 
 
   description = "The primary endpoint that most of the domain/record associated with."
