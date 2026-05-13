@@ -105,11 +105,6 @@ module "dns" {
         name    = "*.oracle"
         proxied = false
         type    = "A"
-      },
-      {
-        name    = "git.oracle"
-        proxied = true
-        type    = "A"
       }
     ]
   }
