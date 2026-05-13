@@ -49,9 +49,7 @@ variable "oracle_instance" {
   type        = string
 }
 
-
-
-
+variable "primary" {
   description = "The primary endpoint that most of the domain/record associated with."
   type        = string
 }
