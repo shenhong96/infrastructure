@@ -110,31 +110,6 @@ module "dns" {
   }
 }
 
-resource "cloudflare_tunnel_config" "oracle" {
-  account_id = var.account_id
-  tunnel_id  = "4ad92dbe-5f49-4a63-b7db-5fa1af59b9b7"
-
-  config {
-    ingress_rule {
-      hostname = "git.oracle.${var.zone}"
-      service  = "https://localhost:443"
-      origin_request {
-        no_tls_verify = true
-      }
-    }
-    ingress_rule {
-      service = "http_status:404"
-    }
-  }
-}
-
-resource "cloudflare_record" "git_oracle" {
-  zone_id = var.zone_id
-  name    = "git.oracle"
-  value   = "4ad92dbe-5f49-4a63-b7db-5fa1af59b9b7.cfargotunnel.com"
-  type    = "CNAME"
-  proxied = true
-}
 
 # resource "cloudflare_access_application" "kasm" {
 #   app_launcher_visible       = true
