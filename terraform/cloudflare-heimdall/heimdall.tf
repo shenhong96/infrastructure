@@ -114,8 +114,8 @@ module "dns" {
 
     "${var.oracle_instance}" = [
       {
-        name    = "*.oracle"
-        proxied = false
+        name    = "git"
+        proxied = true
         type    = "A"
       }
     ]
