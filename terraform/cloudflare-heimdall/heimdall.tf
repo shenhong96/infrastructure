@@ -14,6 +14,18 @@ resource "cloudflare_ruleset" "geoblock" {
   phase   = "http_request_firewall_custom"
   zone_id = var.zone_id
   rules {
+    action      = "skip"
+    description = "Skip geoblock for tunnel hostname"
+    enabled     = true
+    expression  = "(http.host eq \"g.${var.zone}\")"
+    action_parameters {
+      ruleset = "current"
+    }
+    logging {
+      enabled = true
+    }
+  }
+  rules {
     action      = "block"
     description = "Blocking countries that are not in the whitelist."
     enabled     = true
@@ -110,6 +122,93 @@ module "dns" {
   }
 }
 
+
+# Cloudflare Access — protect SSH tunnel with service token auth
+resource "cloudflare_access_service_token" "tunnel_ssh" {
+  account_id = var.account_id
+  name       = "tunnel-ssh"
+}
+
+resource "cloudflare_access_application" "g" {
+  zone_id                    = var.zone_id
+  name                       = "g-ssh-tunnel"
+  domain                     = "g.${var.zone}"
+  type                       = "self_hosted"
+  session_duration           = "720h"
+  skip_interstitial          = true
+  app_launcher_visible       = false
+  auto_redirect_to_identity  = false
+}
+
+resource "cloudflare_access_policy" "g_service_auth" {
+  application_id = cloudflare_access_application.g.id
+  zone_id        = var.zone_id
+  name           = "Service token auth"
+  precedence     = 1
+  decision       = "non_identity"
+
+  include {
+    service_token = [cloudflare_access_service_token.tunnel_ssh.id]
+  }
+}
+
+output "access_client_id" {
+  description = "CF-Access-Client-Id for SSH tunnel"
+  value       = cloudflare_access_service_token.tunnel_ssh.client_id
+  sensitive   = true
+}
+
+output "access_client_secret" {
+  description = "CF-Access-Client-Secret for SSH tunnel"
+  value       = cloudflare_access_service_token.tunnel_ssh.client_secret
+  sensitive   = true
+}
+
+# Cloudflare Tunnel — routes SSH traffic to Gitea
+# Client usage: cloudflared access ssh --hostname g.ahlooii.com --id <CLIENT_ID> --secret <CLIENT_SECRET>
+resource "random_id" "tunnel_secret" {
+  byte_length = 32
+}
+
+resource "cloudflare_tunnel" "oracle" {
+  account_id = var.account_id
+  name       = "oracle"
+  secret     = random_id.tunnel_secret.b64_std
+  config_src = "cloudflare"
+}
+
+resource "cloudflare_tunnel_config" "oracle" {
+  account_id = var.account_id
+  tunnel_id  = cloudflare_tunnel.oracle.id
+
+  config {
+    ingress_rule {
+      hostname = "g.${var.zone}"
+      service  = "ssh://localhost:2279"
+    }
+    ingress_rule {
+      service = "http_status:404"
+    }
+  }
+}
+
+resource "cloudflare_record" "g" {
+  zone_id = var.zone_id
+  name    = "g"
+  value   = "${cloudflare_tunnel.oracle.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
+output "tunnel_token" {
+  description = "Token for cloudflared container on Oracle"
+  value       = base64encode(jsonencode({
+    a = var.account_id
+    t = cloudflare_tunnel.oracle.id
+    s = random_id.tunnel_secret.b64_std
+  }))
+  sensitive = true
+}
 
 # resource "cloudflare_access_application" "kasm" {
 #   app_launcher_visible       = true
