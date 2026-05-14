@@ -110,14 +110,6 @@ module "dns" {
         proxied = false
         type    = "TXT"
       }
-    ],
-
-    "${var.oracle_instance}" = [
-      {
-        name    = "git"
-        proxied = true
-        type    = "A"
-      }
     ]
   }
 }
@@ -164,8 +156,9 @@ output "access_client_secret" {
   sensitive   = true
 }
 
-# Cloudflare Tunnel — routes SSH traffic to Gitea
-# Client usage: cloudflared access ssh --hostname g.ahlooii.com --id <CLIENT_ID> --secret <CLIENT_SECRET>
+# Cloudflare Tunnel — routes traffic to Oracle services
+# SSH:  cloudflared access ssh --hostname g.ahlooii.com
+# Web:  git.ahlooii.com (Gitea web UI via tunnel)
 resource "random_id" "tunnel_secret" {
   byte_length = 32
 }
@@ -187,6 +180,10 @@ resource "cloudflare_tunnel_config" "oracle" {
       service  = "ssh://localhost:2279"
     }
     ingress_rule {
+      hostname = "git.${var.zone}"
+      service  = "http://localhost:3300"
+    }
+    ingress_rule {
       service = "http_status:404"
     }
   }
@@ -195,6 +192,14 @@ resource "cloudflare_tunnel_config" "oracle" {
 resource "cloudflare_record" "g" {
   zone_id = var.zone_id
   name    = "g"
+  value   = "${cloudflare_tunnel.oracle.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
+resource "cloudflare_record" "git" {
+  zone_id = var.zone_id
+  name    = "git"
   value   = "${cloudflare_tunnel.oracle.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
