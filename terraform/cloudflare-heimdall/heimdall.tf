@@ -205,7 +205,7 @@ resource "cloudflare_record" "wireguard" {
   name    = "wireguard"
   value   = "oracle-a1.${var.zone}"
   type    = "CNAME"
-  proxied = true
+  proxied = false
 }
 
 resource "cloudflare_record" "git" {
