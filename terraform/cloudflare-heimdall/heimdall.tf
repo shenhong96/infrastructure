@@ -235,7 +235,7 @@ resource "cloudflare_access_policy" "git_email_auth" {
   decision       = "allow"
 
   include {
-    email = var.allowed_emails
+    email = var.cf_access_allowed_emails
   }
 }
 

@@ -59,7 +59,7 @@ variable "primary" {
   type        = string
 }
 
-variable "allowed_emails" {
+variable "cf_access_allowed_emails" {
   description = "List of emails allowed to authenticate via Cloudflare Access"
   type        = list(string)
 }
