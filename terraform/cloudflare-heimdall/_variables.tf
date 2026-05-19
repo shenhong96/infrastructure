@@ -58,3 +58,8 @@ variable "primary" {
   description = "The primary endpoint that most of the domain/record associated with."
   type        = string
 }
+
+variable "allowed_emails" {
+  description = "List of emails allowed to authenticate via Cloudflare Access"
+  type        = list(string)
+}

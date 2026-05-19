@@ -175,6 +175,10 @@ resource "cloudflare_tunnel_config" "oracle_account_one" {
       service  = "ssh://localhost:2279"
     }
     ingress_rule {
+      hostname = "git.${var.zone}"
+      service  = "http://localhost:3000"
+    }
+    ingress_rule {
       service = "http_status:404"
     }
   }
@@ -207,9 +211,32 @@ resource "cloudflare_record" "wireguard" {
 resource "cloudflare_record" "git" {
   zone_id = var.zone_id
   name    = "git"
-  value   = "oracle-a1.${var.zone}"
+  value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
+}
+
+resource "cloudflare_access_application" "git" {
+  zone_id                   = var.zone_id
+  name                      = "git-access"
+  domain                    = "git.${var.zone}"
+  type                      = "self_hosted"
+  session_duration          = "720h"
+  skip_interstitial         = true
+  app_launcher_visible      = false
+  auto_redirect_to_identity = false
+}
+
+resource "cloudflare_access_policy" "git_email_auth" {
+  application_id = cloudflare_access_application.git.id
+  zone_id        = var.zone_id
+  name           = "Email OTP auth"
+  precedence     = 1
+  decision       = "allow"
+
+  include {
+    email = var.allowed_emails
+  }
 }
 
 output "tunnel_token_oracle_account_one" {
