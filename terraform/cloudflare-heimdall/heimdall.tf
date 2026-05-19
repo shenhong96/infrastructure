@@ -152,23 +152,22 @@ output "access_client_secret" {
   sensitive   = true
 }
 
-# Cloudflare Tunnel — routes traffic to Oracle services
+# Cloudflare Tunnel — oracle_account_one
 # SSH:  cloudflared access ssh --hostname g.ahlooii.com
-# Web:  git.ahlooii.com (Gitea web UI via tunnel)
-resource "random_id" "tunnel_secret" {
+resource "random_id" "tunnel_secret_oracle_account_one" {
   byte_length = 32
 }
 
-resource "cloudflare_tunnel" "oracle" {
+resource "cloudflare_tunnel" "oracle_account_one" {
   account_id = var.account_id
-  name       = "oracle"
-  secret     = random_id.tunnel_secret.b64_std
+  name       = "oracle-account-one"
+  secret     = random_id.tunnel_secret_oracle_account_one.b64_std
   config_src = "cloudflare"
 }
 
-resource "cloudflare_tunnel_config" "oracle" {
+resource "cloudflare_tunnel_config" "oracle_account_one" {
   account_id = var.account_id
-  tunnel_id  = cloudflare_tunnel.oracle.id
+  tunnel_id  = cloudflare_tunnel.oracle_account_one.id
 
   config {
     ingress_rule {
@@ -184,7 +183,7 @@ resource "cloudflare_tunnel_config" "oracle" {
 resource "cloudflare_record" "g" {
   zone_id = var.zone_id
   name    = "g"
-  value   = "${cloudflare_tunnel.oracle.id}.cfargotunnel.com"
+  value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
 }
@@ -213,12 +212,12 @@ resource "cloudflare_record" "git" {
   proxied = true
 }
 
-output "tunnel_token" {
-  description = "Token for cloudflared container on Oracle"
+output "tunnel_token_oracle_account_one" {
+  description = "Token for cloudflared on Oracle account one"
   value       = base64encode(jsonencode({
     a = var.account_id
-    t = cloudflare_tunnel.oracle.id
-    s = random_id.tunnel_secret.b64_std
+    t = cloudflare_tunnel.oracle_account_one.id
+    s = random_id.tunnel_secret_oracle_account_one.b64_std
   }))
   sensitive = true
 }
