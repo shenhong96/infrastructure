@@ -59,10 +59,6 @@ module "dns" {
         proxied = true
       },
       {
-        name    = "wireguard"
-        proxied = true
-      },
-      {
         name    = "syncthing"
         proxied = true
       },
@@ -180,10 +176,6 @@ resource "cloudflare_tunnel_config" "oracle" {
       service  = "ssh://localhost:2279"
     }
     ingress_rule {
-      hostname = "git.${var.zone}"
-      service  = "http://localhost:3300"
-    }
-    ingress_rule {
       service = "http_status:404"
     }
   }
@@ -197,10 +189,26 @@ resource "cloudflare_record" "g" {
   proxied = true
 }
 
+resource "cloudflare_record" "oracle_a1" {
+  zone_id = var.zone_id
+  name    = "oracle-a1"
+  value   = var.oracle_account_one
+  type    = "A"
+  proxied = true
+}
+
+resource "cloudflare_record" "wireguard" {
+  zone_id = var.zone_id
+  name    = "wireguard"
+  value   = "oracle-a1.${var.zone}"
+  type    = "CNAME"
+  proxied = true
+}
+
 resource "cloudflare_record" "git" {
   zone_id = var.zone_id
   name    = "git"
-  value   = "${cloudflare_tunnel.oracle.id}.cfargotunnel.com"
+  value   = "oracle-a1.${var.zone}"
   type    = "CNAME"
   proxied = true
 }
