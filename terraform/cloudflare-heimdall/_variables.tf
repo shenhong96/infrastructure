@@ -63,3 +63,9 @@ variable "cf_access_allowed_emails" {
   description = "List of emails allowed to authenticate via Cloudflare Access"
   type        = list(string)
 }
+
+variable "cf_access_fileshare_emails" {
+  description = "Additional emails allowed to access the file share (f.zone)"
+  type        = list(string)
+  default     = []
+}

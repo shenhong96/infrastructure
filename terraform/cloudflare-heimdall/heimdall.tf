@@ -17,7 +17,7 @@ resource "cloudflare_ruleset" "geoblock" {
     action      = "skip"
     description = "Skip geoblock for tunnel hostname"
     enabled     = true
-    expression  = "(http.host eq \"g.${var.zone}\")"
+    expression  = "(http.host eq \"g.${var.zone}\") or (http.host eq \"f.${var.zone}\")"
     action_parameters {
       ruleset = "current"
     }
@@ -179,6 +179,10 @@ resource "cloudflare_tunnel_config" "oracle_account_one" {
       service  = "http://localhost:3000"
     }
     ingress_rule {
+      hostname = "f.${var.zone}"
+      service  = "http://localhost:5000"
+    }
+    ingress_rule {
       service = "http_status:404"
     }
   }
@@ -214,6 +218,37 @@ resource "cloudflare_record" "git" {
   value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
+}
+
+resource "cloudflare_record" "f" {
+  zone_id = var.zone_id
+  name    = "f"
+  value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
+resource "cloudflare_access_application" "f" {
+  zone_id                   = var.zone_id
+  name                      = "f-file-share"
+  domain                    = "f.${var.zone}"
+  type                      = "self_hosted"
+  session_duration          = "720h"
+  skip_interstitial         = true
+  app_launcher_visible      = false
+  auto_redirect_to_identity = false
+}
+
+resource "cloudflare_access_policy" "f_email_auth" {
+  application_id = cloudflare_access_application.f.id
+  zone_id        = var.zone_id
+  name           = "Email OTP auth"
+  precedence     = 1
+  decision       = "allow"
+
+  include {
+    email = distinct(concat(var.cf_access_allowed_emails, var.cf_access_fileshare_emails))
+  }
 }
 
 resource "cloudflare_access_application" "git" {
