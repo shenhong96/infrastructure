@@ -17,7 +17,7 @@ resource "cloudflare_ruleset" "geoblock" {
     action      = "skip"
     description = "Skip geoblock for tunnel hostname"
     enabled     = true
-    expression  = "(http.host eq \"g.${var.zone}\") or (http.host eq \"f.${var.zone}\")"
+    expression  = "(http.host eq \"g.${var.zone}\") or (http.host eq \"f.${var.zone}\") or (http.host eq \"scrape.${var.zone}\")"
     action_parameters {
       ruleset = "current"
     }
@@ -183,6 +183,10 @@ resource "cloudflare_tunnel_config" "oracle_account_one" {
       service  = "http://localhost:5000"
     }
     ingress_rule {
+      hostname = "scrape.${var.zone}"
+      service  = "http://127.0.0.1:8765"
+    }
+    ingress_rule {
       service = "http_status:404"
     }
   }
@@ -223,6 +227,14 @@ resource "cloudflare_record" "git" {
 resource "cloudflare_record" "f" {
   zone_id = var.zone_id
   name    = "f"
+  value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
+resource "cloudflare_record" "scrape" {
+  zone_id = var.zone_id
+  name    = "scrape"
   value   = "${cloudflare_tunnel.oracle_account_one.id}.cfargotunnel.com"
   type    = "CNAME"
   proxied = true
